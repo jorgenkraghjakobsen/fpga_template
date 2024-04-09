@@ -1,0 +1,83 @@
+good name for an fpga templete project that contains a i2c interface with an registerbank for small to medium projects like gowin 9k or ice40
+￼volume_up
+￼￼
+Here are some good names for an FPGA template project that contains an I2C interface with a register bank for small to medium projects like Gowin 9k or ICE40:
+
+Descriptive:
+
+I2C_RegisterBank_Template
+SMBus_Register_Peripheral_Template (SMBus is a variant of I2C)
+Gowin9k_ICE40_I2C_RegisterBank
+Short and Catchy:
+
+I2C_Link
+RegMap_Lite
+I2C_Reactor (play on the concept of using registers to control the core)
+Specific to Gowin or Lattice (ICE40):
+
+Gowin_I2C_Lego (Lego emphasizes the modularity of the template)
+ICE40_Regulator
+Ultimately, the best name will depend on your preference and the specific goals of your project.
+
+Here are some additional tips for choosing a good name:
+
+Keep it short and easy to remember.
+Use keywords that accurately reflect the project's functionality.
+Avoid using names that are already in use by other projects.
+Make sure the name is easy to pronounce and spell.
+￼
+￼
+￼
+share
+￼
+￼
+more_vert
+￼
+I2C_Reactor is good. I have also build a web based tools to build and maintain register maps. good names for that could be regmap builder regmap_Creater 
+￼edit
+Vis udkast
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+￼volume_up
+￼￼
+Both regmap builder and regmap_Creater are good options, but here are some additional suggestions that might be even better depending on what you want to emphasize:
+
+Emphasize ease of use:
+
+RegMap Wizard
+Registerator (combines register and creator)
+I2C Maestro (maestro suggests control and ease of use)
+Emphasize customization:
+
+RegMap Architect
+I2C Blueprint
+Register Definition Tool
+Catchy and short:
+
+Regify (combines register and simplify)
+Bit Forge (plays on the idea of building with bits)
+I2C Tailor
+Ultimately, the best name will depend on what aspect of your tool you want to highlight.  Here's a breakdown to help you decide:
+
+regmap builder / regmap_Creater: These are clear and concise, but don't necessarily emphasize any specific strengths.
+Focus on ease of use: Choose names like RegMap Wizard or I2C Maestro if you want to highlight the user-friendly nature of your tool.
+Focus on customization: If your tool offers a lot of options for building complex register maps, consider RegMap Architect or I2C Blueprint.
+Catchy and short: Options like Regify or Bit Forge might be good if you want a name that is easy to remember and stands out.
+I hope this gives you some additional ideas!
