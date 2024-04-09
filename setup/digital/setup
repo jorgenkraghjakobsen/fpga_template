@@ -1,0 +1,51 @@
+#!/usr/bin/perl 
+
+# IC Workspace digital flow setup script 
+# This file is executed in workspace after component content has been update 
+# Each cofiguration setup is only configured in this file. 
+
+printf("Running local setup script in setup/digital\n"); 
+
+
+$svn = "svn";
+   		 
+
+$svn_url	 = "svn://anyvej11.dk";
+$debug		 = 0;
+
+
+if (-e "bin")
+{}
+else
+{ `mkdir bin`;
+  $cmd = sprintf("$svn cat $svn_url/icworks/software/cad-tools/icw/trunk/maw > bin/icw");
+  system($cmd);
+}
+
+
+#
+#if (-e "std_cells")
+#{}
+#else 
+#{ `ln -s /dk/dbh/DBH_STD_1830BD18BA_HDSVT1P8V_A_12Q4_V01 std_cells`;
+#}
+#if (-e "std_cells_5v0")
+#{}
+#else 
+#{ `ln -s /dk/dbh/DBH_STD_1830BD18BA_GE5P0V_A_11Q3_V01 std_cells_5v0`;
+#
+# }
+# 
+# Copy digital lib form depot, unpack and do related dig.libsetup stuff.
+#if (! -e "std_cells")
+#{ $cmd = sprintf("$svn cat $svn_url/merus/process/DBH/stdCell/DBH_STD_1860BD18BA_HD1P8V_11Q1_V01.tar.gz \\
+#                  --username $hash{$ENV{'USER'}} > DBH_STD_1860BD18BA_HD1P8V_11Q1_V01.tar.gz"); 
+#  printf($cmd);
+#  system($cmd);
+#   
+#  `tar zxf DBH_STD_1860BD18BA_HD1P8V_11Q1_V01.tar.gz`;
+#  `mv DBH_STD_1860BD18BA_HD1P8V_11Q1_V01 std_cells`;
+#  `rm DBH_STD_1860BD18BA_HD1P8V_11Q1_V01.tar.gz`;
+#  `tar -C std_cells/schematic -xf std_cells/schematic/1860BD18BA_HD1P8V_SCH.tar`;
+#}   
+  

@@ -1,0 +1,1 @@
+echo generice_simulation_tcl_script 
