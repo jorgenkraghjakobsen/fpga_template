@@ -25,11 +25,11 @@ IO_PORT "debug_led_pin[4]" DRIVE=8 IO_TYPE=LVCMOS18;
 IO_LOC  "debug_led_pin[5]" 16;
 IO_PORT "debug_led_pin[5]" DRIVE=8 IO_TYPE=LVCMOS18;
 
-IO_LOC  "btn1_reset" 3;
-IO_PORT "btn1_reset" IO_TYPE=LVCMOS18;
+IO_LOC  "btn_s1_reset" 3;
+IO_PORT "btn_s1_reset" IO_TYPE=LVCMOS18;
 
-IO_LOC  "btn2" 4;
-IO_PORT "btn2" IO_TYPE=LVCMOS18;
+IO_LOC  "btn_s2" 4;
+IO_PORT "btn_s2" IO_TYPE=LVCMOS18;
 
 IO_LOC  "gnd0" 33;
 IO_PORT "gnd0" DRIVE=24 IO_TYPE=LVCMOS33;

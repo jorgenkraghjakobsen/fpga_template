@@ -57,7 +57,7 @@ func main() {
 		{0, "enable_stuf", 			"sys_cfg", 0, 1, 0, 0, 		false, "Enable stuf", "Long"},
 		{1, "enable_other", 		"sys_cfg", 0, 1, 1, 1, 		false, "Enable other stuf", "Long"},
 		{2, "monitor_flag", 		"sys_cfg", 0, 1, 2, 0, 		true,  "Monitor internal flag", "Long"}, //Read only
-		{3, "counter_val",		 	"sys_cfg", 1, 8, 0, 0x85, 	flase, "Counter value for pwm", "Long"}, //Read only
+		{3, "pwm_duty",			 	"sys_cfg", 1, 8, 0, 0x85, 	false, "Counter value for pwm", "Long"}, 
 		{4, "debug_led", 			"sys_cfg", 2, 6, 0, 0x55, 	false, "Debug led signals", "Debug led signals"},
 	}
 
