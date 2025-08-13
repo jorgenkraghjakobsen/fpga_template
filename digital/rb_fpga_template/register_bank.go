@@ -17,7 +17,7 @@ type RegMap struct {
 	version  int       // Version tag
 	size     int       // Address space Number of bits in address vector   sections Section    // List of sections
 	errorCnt int       // Current number of error duing output
-	sections []Section // List of sections
+	sections []Section // List of sectionspwm_out
 }
 
 type Section struct {
