@@ -69,7 +69,7 @@ module rb_fpga_template (
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:50:5
 			reg__sys_cfg__pwm_duty <= 8'b10000101;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:51:5
-			reg__sys_cfg__debug_led <= 6'b010101;
+			reg__sys_cfg__debug_led <= 6'b001111;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:54:5
 			reg__dsp_cfg__bypass_enable <= 1'b1;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:55:5

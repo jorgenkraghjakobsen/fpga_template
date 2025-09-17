@@ -1,0 +1,529 @@
+#!/usr/bin/env python3
+"""
+fcom - FPGA Communication Tool
+Command line interface for FPGA register access via UART.
+Inspired by scom from Merus Audio.
+
+Written by Claude Code, 2024
+
+Usage:
+fcom <command> [address|symbol] [[data] ...] [options]
+
+Basic commands:  w - Write to register(s) in device (supports multibyte)
+                 r - Read from registers in device
+                 b - Block write to consecutive registers
+                 br - Block read from consecutive registers
+                 d - Dump register range
+                 led - Control debug LEDs
+                 pwm - Set PWM duty cycle
+
+Special functions:
+                 test - Test UART connection
+                 info - Show register map information
+
+Options:
+                 -p <port> : Specify UART port (default: /dev/ttyUSB1)
+                 -b <baud> : Specify baud rate (default: 115200)
+                 -t <timeout> : Specify timeout in seconds (default: 2.0)
+                 -o[d|b|h] : Specify output format (default hex)
+                             -od Decimal
+                             -ob Binary
+                             -oh Hex (default)
+                 -v[0-2] : Verbose level
+                             -v0 Quiet
+                             -v1 Normal (default)
+                             -v2 Debug
+                 -h : Show this help
+
+Examples:
+    fcom r 0x01          # Read PWM duty register
+    fcom w pwm_duty 128  # Write to PWM duty register
+    fcom w 2 0x02 0x03   # Write 0x02 to addr 2, 0x03 to addr 3
+    fcom led 0x2A        # Set LED pattern
+    fcom pwm 75.0        # Set PWM to 75% duty cycle
+    fcom d 0x00 0x05     # Dump registers 0x00 to 0x05
+    fcom b 0x10 0xAA 0xBB 0xCC  # Block write starting at 0x10
+    fcom br 0x00 3       # Block read 3 bytes starting at 0x00
+"""
+
+import sys
+import argparse
+import time
+from fpga_uart_interface import FPGAUartInterface
+
+# Register map with symbolic names
+REGISTER_MAP = {
+    # System configuration section (0x00-0x0F)
+    'sys_cfg_control': 0x00,
+    'sys_cfg': 0x00,
+    'pwm_duty': 0x01,
+    'debug_led': 0x02,
+    'debug_leds': 0x02,
+
+    # DSP configuration section (0x40-0x4F)
+    'dsp_cfg_control': 0x40,
+    'dsp_cfg': 0x40,
+}
+
+# Reverse lookup for addresses to names
+ADDR_TO_NAME = {v: k for k, v in REGISTER_MAP.items()}
+
+def parse_value(value_str):
+    """Parse a value string that can be hex, decimal, or binary."""
+    value_str = value_str.strip()
+
+    if value_str.startswith('0x') or value_str.startswith('0X'):
+        return int(value_str, 16)
+    elif value_str.startswith('0b') or value_str.startswith('0B'):
+        return int(value_str, 2)
+    else:
+        return int(value_str)
+
+def parse_address(addr_str):
+    """Parse an address that can be numeric or symbolic."""
+    addr_str = addr_str.strip().lower()
+
+    if addr_str in REGISTER_MAP:
+        return REGISTER_MAP[addr_str]
+    else:
+        return parse_value(addr_str)
+
+def format_output(value, output_format):
+    """Format output value according to specified format."""
+    if output_format == 'd':
+        return str(value)
+    elif output_format == 'b':
+        return f"0b{value:08b}"
+    else:  # hex
+        return f"0x{value:02X}"
+
+def get_register_name(address):
+    """Get symbolic name for an address if available."""
+    return ADDR_TO_NAME.get(address, f"0x{address:02X}")
+
+def cmd_read(fpga, args):
+    """Read command: r <address>"""
+    if len(args) < 1:
+        print("Error: Read command requires an address")
+        return False
+    time.sleep(0.10)
+    try:
+        address = parse_address(args[0])
+        if not (0 <= address <= 255):
+            print(f"Error: Address {address} out of range (0-255)")
+            return False
+
+        value = fpga.read_register(address)
+        if value is not None:
+            reg_name = get_register_name(address)
+            formatted_value = format_output(value, fpga.output_format)
+            if fpga.verbose >= 1:
+                print(f"Read {reg_name}: {formatted_value}")
+            else:
+                print(formatted_value)
+            return True
+        else:
+            print(f"Error: Failed to read from address {format_output(address, 'h')}")
+            return False
+    except ValueError as e:
+        print(f"Error: Invalid address '{args[0]}': {e}")
+        return False
+
+def cmd_write(fpga, args):
+    """Write command: w <address> <data> [<data2> <data3> ...]"""
+    if len(args) < 2:
+        print("Error: Write command requires address and at least one data value")
+        return False
+
+    try:
+        start_address = parse_address(args[0])
+        data_values = [parse_value(arg) for arg in args[1:]]
+
+        if not (0 <= start_address <= 255):
+            print(f"Error: Address {start_address} out of range (0-255)")
+            return False
+
+        # Check if end address would be out of range
+        end_address = start_address + len(data_values) - 1
+        if end_address > 255:
+            print(f"Error: End address {end_address} out of range (0-255)")
+            return False
+
+        # Validate all data values
+        for i, data in enumerate(data_values):
+            if not (0 <= data <= 255):
+                print(f"Error: Data value {i+1} ({data}) out of range (0-255)")
+                return False
+
+        # If only one data value, use single write for compatibility
+        if len(data_values) == 1:
+            success = fpga.write_register(start_address, data_values[0])
+            if success:
+                reg_name = get_register_name(start_address)
+                if fpga.verbose >= 1:
+                    print(f"Write {reg_name}: {format_output(data_values[0], fpga.output_format)}")
+                return True
+            else:
+                print(f"Error: Failed to write to address {format_output(start_address, 'h')}")
+                return False
+        else:
+            # Multiple data values - write to consecutive addresses
+            success = True
+            for i, data in enumerate(data_values):
+                address = start_address + i
+                if not fpga.write_register(address, data):
+                    print(f"Error: Failed to write to address {format_output(address, 'h')}")
+                    success = False
+                    break
+                elif fpga.verbose >= 1:
+                    reg_name = get_register_name(address)
+                    print(f"Write {reg_name}: {format_output(data, fpga.output_format)}")
+
+            return success
+
+    except ValueError as e:
+        print(f"Error: Invalid value: {e}")
+        return False
+
+def cmd_block_write(fpga, args):
+    """Block write command: b <start_address> <data1> <data2> ..."""
+    if len(args) < 2:
+        print("Error: Block write requires start address and at least one data byte")
+        return False
+
+    try:
+        start_addr = parse_address(args[0])
+        data_bytes = [parse_value(arg) for arg in args[1:]]
+
+        if not (0 <= start_addr <= 255):
+            print(f"Error: Start address {start_addr} out of range (0-255)")
+            return False
+
+        for i, data in enumerate(data_bytes):
+            if not (0 <= data <= 255):
+                print(f"Error: Data byte {i+1} ({data}) out of range (0-255)")
+                return False
+
+        success = fpga.write_block(start_addr, data_bytes)
+        if success:
+            if fpga.verbose >= 1:
+                data_str = ' '.join(format_output(d, fpga.output_format) for d in data_bytes)
+                print(f"Block write to {format_output(start_addr, 'h')}: {data_str}")
+            return True
+        else:
+            print(f"Error: Failed to write block starting at {format_output(start_addr, 'h')}")
+            return False
+    except ValueError as e:
+        print(f"Error: Invalid value: {e}")
+        return False
+
+def cmd_block_read(fpga, args):
+    """Block read command: br <start_address> <length>"""
+    if len(args) < 2:
+        print("Error: Block read requires start address and length")
+        return False
+
+    try:
+        start_addr = parse_address(args[0])
+        length = parse_value(args[1])
+
+        if not (0 <= start_addr <= 255):
+            print(f"Error: Start address {start_addr} out of range (0-255)")
+            return False
+
+        if not (1 <= length <= 255):
+            print(f"Error: Length {length} out of range (1-255)")
+            return False
+
+        data = fpga.read_block(start_addr, length)
+        if data is not None:
+            if fpga.verbose >= 1:
+                print(f"Block read from {format_output(start_addr, 'h')} ({length} bytes):")
+                for i, value in enumerate(data):
+                    addr = start_addr + i
+                    reg_name = get_register_name(addr)
+                    print(f"  {reg_name}: {format_output(value, fpga.output_format)}")
+            else:
+                print(' '.join(format_output(d, fpga.output_format) for d in data))
+            return True
+        else:
+            print(f"Error: Failed to read block from {format_output(start_addr, 'h')}")
+            return False
+    except ValueError as e:
+        print(f"Error: Invalid value: {e}")
+        return False
+
+def cmd_dump(fpga, args):
+    """Dump command: d <start_addr> <end_addr>"""
+    if len(args) < 2:
+        print("Error: Dump command requires start and end addresses")
+        return False
+
+    try:
+        start_addr = parse_address(args[0])
+        end_addr = parse_address(args[1])
+
+        if not (0 <= start_addr <= 255) or not (0 <= end_addr <= 255):
+            print("Error: Addresses must be in range 0-255")
+            return False
+
+        if start_addr > end_addr:
+            print("Error: Start address must be <= end address")
+            return False
+
+        print(f"\nRegister dump ({format_output(start_addr, 'h')} - {format_output(end_addr, 'h')}):")
+        print("Addr      Name              Value     Binary     Description")
+        print("-" * 65)
+
+        success = True
+        for addr in range(start_addr, end_addr + 1):
+            value = fpga.read_register(addr)
+            if value is not None:
+                reg_name = get_register_name(addr)
+                formatted_value = format_output(value, fpga.output_format)
+                binary = f"{value:08b}"
+
+                # Add description for known registers
+                desc = ""
+                if addr == 0x00:
+                    desc = "System control bits"
+                elif addr == 0x01:
+                    desc = f"PWM duty ({(value/255*100):.1f}%)"
+                elif addr == 0x02:
+                    desc = "Debug LED pattern"
+                elif addr == 0x40:
+                    desc = "DSP configuration"
+
+                print(f"{format_output(addr, 'h'):<8} {reg_name:<16} {formatted_value:<8} {binary:<8} {desc}")
+            else:
+                print(f"{format_output(addr, 'h'):<8} ERROR")
+                success = False
+
+        return success
+    except ValueError as e:
+        print(f"Error: Invalid address: {e}")
+        return False
+
+def cmd_led(fpga, args):
+    """LED command: led <pattern>"""
+    if len(args) < 1:
+        print("Error: LED command requires a pattern (0-63)")
+        return False
+
+    try:
+        pattern = parse_value(args[0])
+        if not (0 <= pattern <= 63):
+            print("Error: LED pattern must be 0-63 (6 bits)")
+            return False
+
+        success = fpga.set_debug_leds(pattern)
+        if success:
+            if fpga.verbose >= 1:
+                print(f"Set LED pattern: {format_output(pattern, fpga.output_format)} (binary: {pattern:06b})")
+            return True
+        else:
+            print("Error: Failed to set LED pattern")
+            return False
+    except ValueError as e:
+        print(f"Error: Invalid pattern: {e}")
+        return False
+
+def cmd_pwm(fpga, args):
+    """PWM command: pwm <duty_percent>"""
+    if len(args) < 1:
+        print("Error: PWM command requires duty cycle percentage")
+        return False
+
+    try:
+        duty_percent = float(args[0])
+        success = fpga.set_pwm_duty(duty_percent)
+        if success:
+            if fpga.verbose >= 1:
+                print(f"Set PWM duty cycle: {duty_percent:.1f}%")
+            return True
+        else:
+            print("Error: Failed to set PWM duty cycle")
+            return False
+    except ValueError as e:
+        print(f"Error: Invalid duty cycle: {e}")
+        return False
+
+def cmd_test(fpga, args):
+    """Test command: test"""
+    print("Testing UART connection...")
+
+    # Try to read a register
+    value = fpga.read_register(0x00)
+    if value is not None:
+        print(f"✓ Read test passed: register 0x00 = {format_output(value, 'h')}")
+
+        # Try to write and read back
+        test_value = 0x55
+        if fpga.write_register(0x02, test_value):  # Debug LED register
+            read_back = fpga.read_register(0x02)
+            if read_back == test_value:
+                print(f"✓ Write/read test passed: wrote {format_output(test_value, 'h')}, read {format_output(read_back, 'h')}")
+                return True
+            else:
+                print(f"✗ Write/read test failed: wrote {format_output(test_value, 'h')}, read {format_output(read_back, 'h')}")
+        else:
+            print("✗ Write test failed")
+    else:
+        print("✗ Read test failed")
+
+    return False
+
+def cmd_info(fpga, args):
+    """Info command: info"""
+    print("FPGA Register Map:")
+    print("==================")
+    print("Symbol              Address  Description")
+    print("-" * 45)
+
+    # Sort by address
+    sorted_regs = sorted(REGISTER_MAP.items(), key=lambda x: x[1])
+    for symbol, address in sorted_regs:
+        desc = ""
+        if address == 0x00:
+            desc = "System configuration control"
+        elif address == 0x01:
+            desc = "PWM duty cycle (8-bit)"
+        elif address == 0x02:
+            desc = "Debug LED pattern (6-bit)"
+        elif address == 0x40:
+            desc = "DSP configuration control"
+
+        print(f"{symbol:<18} {format_output(address, 'h'):<8} {desc}")
+
+    print(f"\nConnection: {fpga.port} @ {fpga.baudrate} baud")
+    return True
+
+def show_help():
+    """Show help message."""
+    print(__doc__)
+
+def main():
+    # Parse command line arguments
+    if len(sys.argv) < 2:
+        show_help()
+        return 1
+
+    # Default options
+    port = '/dev/ttyUSB1'
+    baudrate = 115200
+    timeout = 2.0
+    output_format = 'h'  # hex
+    verbose = 1
+
+    # Parse options
+    args = sys.argv[1:]
+    filtered_args = []
+
+    i = 0
+    while i < len(args):
+        arg = args[i]
+
+        if arg.startswith('-p'):
+            if len(arg) > 2:
+                port = arg[2:]
+            elif i + 1 < len(args):
+                port = args[i + 1]
+                i += 1
+            else:
+                print("Error: -p option requires a port")
+                return 1
+
+        elif arg.startswith('-b'):
+            if len(arg) > 2:
+                baudrate = int(arg[2:])
+            elif i + 1 < len(args):
+                baudrate = int(args[i + 1])
+                i += 1
+            else:
+                print("Error: -b option requires a baud rate")
+                return 1
+
+        elif arg.startswith('-t'):
+            if len(arg) > 2:
+                timeout = float(arg[2:])
+            elif i + 1 < len(args):
+                timeout = float(args[i + 1])
+                i += 1
+            else:
+                print("Error: -t option requires a timeout")
+                return 1
+
+        elif arg.startswith('-o'):
+            if len(arg) > 2:
+                output_format = arg[2:]
+            else:
+                print("Error: -o option requires a format (d|b|h)")
+                return 1
+
+        elif arg.startswith('-v'):
+            if len(arg) > 2:
+                verbose = int(arg[2:])
+            else:
+                verbose = 2
+
+        elif arg == '-h' or arg == '--help':
+            show_help()
+            return 0
+
+        else:
+            filtered_args.append(arg)
+
+        i += 1
+
+    if len(filtered_args) < 1:
+        print("Error: No command specified")
+        show_help()
+        return 1
+
+    command = filtered_args[0].lower()
+    cmd_args = filtered_args[1:]
+
+    # Create FPGA interface
+    fpga = FPGAUartInterface(port=port, baudrate=baudrate, timeout=timeout)
+    fpga.output_format = output_format
+    fpga.verbose = verbose
+
+    # Connect to FPGA
+    if not fpga.connect():
+        print(f"Error: Could not connect to FPGA on {port}")
+        return 1
+
+    try:
+        # Execute command
+        success = False
+
+        if command == 'r' or command == 'read':
+            success = cmd_read(fpga, cmd_args)
+        elif command == 'w' or command == 'write':
+            success = cmd_write(fpga, cmd_args)
+        elif command == 'b' or command == 'block_write':
+            success = cmd_block_write(fpga, cmd_args)
+        elif command == 'br' or command == 'block_read':
+            success = cmd_block_read(fpga, cmd_args)
+        elif command == 'd' or command == 'dump':
+            success = cmd_dump(fpga, cmd_args)
+        elif command == 'led' or command == 'leds':
+            success = cmd_led(fpga, cmd_args)
+        elif command == 'pwm':
+            success = cmd_pwm(fpga, cmd_args)
+        elif command == 'test':
+            success = cmd_test(fpga, cmd_args)
+        elif command == 'info':
+            success = cmd_info(fpga, cmd_args)
+        else:
+            print(f"Error: Unknown command '{command}'")
+            show_help()
+            success = False
+
+        return 0 if success else 1
+
+    finally:
+        fpga.disconnect()
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -42,7 +42,7 @@
       "address"     : "0x02",
       "pos"         : "0",
       "size"        : "6",
-      "reset"       : "85",
+      "reset"       : "15",
       "readonly"    : "0",
       "description" : "Debug led signals"
     },

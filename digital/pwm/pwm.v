@@ -6,12 +6,12 @@ module pwm(
 );
 
 reg [7:0] counter;
-reg pwm = 1'b0;
+reg pwm = 1'b1;
 
 always @(posedge clock_in or posedge reset) begin
     if (reset) begin
         counter <= 0;
-        pwm <= 0;
+        pwm <= 1;
     end else begin
         if (counter < 255) begin
             counter <= counter + 1;

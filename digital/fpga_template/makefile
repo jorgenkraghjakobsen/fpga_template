@@ -3,27 +3,35 @@ BOARD_DIR	= fpga_template/tangnano9k
 FAMILY		= GW1N-9C
 DEVICE		= GW1NR-LV9QN88PC6/I5
 
-PRO=fpga_template_top
+PROJ		= fpga_template
 
 WS 			= $(shell cd ../.. ; pwd )
-OBJ 		= $(WS)/obj/$(PRO)
+OBJ 		= $(WS)/obj/$(PROJ)
 
 SRC_INC 	= $(WS)/digital
-PKG 		= $(WS)/digital/rb_fpga_template/rb_fpga_template_struct.svh
+PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 
 .PHONY: $(OBJ)
 # Create Object build dir
 $(OBJ):
 	mkdir -p $@
 
-SRC_LIST = \
-digital/pwm/pwm.v \
+SRC_I2C = \
 digital/i2c_if/i2c_if.v \
 digital/i2c_if/i2cSlave_define.v \
 digital/i2c_if/serialInterface.v \
-digital/i2c_if/timescale.v \
-digital/rb_fpga_template/rb_fpga_template.sv \
-digital/fpga_template/fpga_template.sv
+digital/i2c_if/timescale.v
+
+SRC_UART = \
+digital/uart_if/uart_if.v
+
+SRC_RB_IF = $(SRC_I2C) $(SRC_UART) 
+
+SRC_LIST = \
+digital/pwm/pwm.v \
+$(SRC_RB_IF) \
+digital/rb_$(PROJ)/rb_$(PROJ).sv \
+digital/$(PROJ)/$(PROJ).sv
 
 
 SRC = $(addprefix $(WS)/, $(SRC_LIST) )
@@ -31,8 +39,8 @@ SRC_SV = $(filter %.sv ,$(SRC))
 SRC_V  = $(filter %.v ,$(SRC))
 SRC_CONV = $(addsuffix .conv.v,$(SRC_SV))
 
-$(WS)/digital/rb_fpga_template/rb_fpga_template.sv: $(WS)/digital/rb_fpga_template/register_bank.go 
-	cd ../rb_fpga_template ;\
+$(WS)/digital/rb_$(PROJ)/rb_$(PROJ).sv: $(WS)/digital/rb_$(PROJ)/register_bank.go 
+	cd ../rb_$(PROJ) ;\
 	make 
 
 test:
@@ -47,32 +55,40 @@ conv2v: $(SRC_SV)
 src: 
 	@echo $(SRC_SV)
 
-$(OBJ)/$(PRO).json: conv2v $(OBJ) $(SRC) 
+s:
+	@echo $(SRC)	
+
+$(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 
 	cd $(OBJ) ;\
 	echo "#Yosys build script" > yosys.cmd ;\
 	echo "verilog_defaults -add -I $(SRC_INC)" >> yosys.cmd ;\
 	echo "read_verilog $(SRC_V) $(SRC_CONV)" >> yosys.cmd ;\
-	echo "synth_gowin -top $(PRO) -json $(PRO).json" >> yosys.cmd ;\
+	echo "synth_gowin -top $(PROJ)_top -json $(PROJ).json" >> yosys.cmd ;\
 	yosys -s yosys.cmd
 
 # Place and Route
-$(OBJ)/$(PRO)_pnr.json: $(OBJ)/$(PRO).json
+$(OBJ)/$(PROJ)_pnr.json: $(OBJ)/$(PROJ).json $(WS)/digital/$(BOARD_DIR).cst
 	cd $(OBJ) ;\
-	nextpnr-himbaechel --json $(PRO).json --write $(PRO)_pnr.json \
+	nextpnr-himbaechel --json $(PROJ).json --write $(PROJ)_pnr.json \
 	--device ${DEVICE} --vopt family=${FAMILY} --vopt cst=$(WS)/digital/$(BOARD_DIR).cst
 
 
-$(OBJ)/$(PRO).fs: $(OBJ)/$(PRO)_pnr.json
+$(OBJ)/$(PROJ).fs: $(OBJ)/$(PROJ)_pnr.json
 	cd $(OBJ) ;\
-	gowin_pack -d ${FAMILY} -o $(PRO).fs $(PRO)_pnr.json
+	gowin_pack -d ${FAMILY} -o $(PROJ).fs $(PROJ)_pnr.json
+
+
+build: $(WS)/digital/$(BOARD_DIR).cst $(SRC_SV)
+	$(MAKE) $(OBJ)/$(PROJ).fs
+
 
 # Flash to Eprom and reboot
-flash: $(OBJ)/$(PRO).fs
-	openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} -f $(OBJ)/$(PRO).fs
+flash: 
+	openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} -f $(OBJ)/$(PROJ).fs
 
 # Load bit stream to device no -f
-load: $(OBJ)/$(PRO).fs
-	sudo openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} $(OBJ)/$(PRO).fs
+load: 
+	openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} $(OBJ)/$(PROJ).fs
 
 clean:
 	rm -rf $(OBJ)
