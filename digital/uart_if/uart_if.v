@@ -416,5 +416,5 @@ assign proto_state_mon  = proto_state[1:0];
 assign debug_rx_state = rx_state;
 assign debug_start_detected = (rx_state == RX_IDLE && !uart_rx_synced);
 assign debug_rx_data_valid  = rx_data_valid ; 
-assign tx_state_mon     = tx_state[1:0];
+assign tx_state_mon         = 0 ; // tx_state[1:0];
 endmodule
