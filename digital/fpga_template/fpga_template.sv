@@ -16,15 +16,14 @@ module fpga_template_top
     output  uart_rx_mon,
     output  [1:0] rx_state_mon,
     output  [3:0] proto_state_mon, 
+    output  [1:0] tx_state_mon, 
     
     //---PWM-----------
     output pwm_out,
     //---Debug---------
     output  [5:0] debug_led_pin,
     input   btn_s1_resetb,     // Button 1 input
-    input   btn_s2,           // Button 2 input
-    //---More Ground---
-    output  gnd0            // Ground output with cranked up power
+    input   btn_s2            // Button 2 input
     );
     
     
@@ -32,7 +31,6 @@ assign uart_rx_mon = uart_rx;
 wire debug_rx_data_valid; 
 assign uart_tx_mon = uart_tx; 
 
-assign gnd0 = 1'b0;
 assign debug_led_pin = sys_cfg.debug_led;
 
 //--------------------------------------------------------------------------------------------------------
@@ -116,7 +114,8 @@ uart_if uart_inst (
     .debug_out          (uart_debug_out),
     .debug_rx_data_valid (debug_rx_data_valid),
     .rx_state_mon       (rx_state_mon),
-    .proto_state_mon    (proto_state_mon) 
+    .proto_state_mon    (proto_state_mon),
+    .tx_state_mon       (tx_state_mon) 
 );
 
 //--------------------------------------------------------------------------------------------------------

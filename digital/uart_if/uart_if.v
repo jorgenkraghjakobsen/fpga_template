@@ -25,6 +25,7 @@ module uart_if (
     output [7:0] debug_out,
     output [1:0] rx_state_mon,
     output [1:0] proto_state_mon,
+    output [1:0] tx_state_mon,
     output [1:0] debug_rx_state,
 
     output debug_start_detected,
@@ -392,6 +393,9 @@ always @(posedge clk) begin
                 PROTO_BLOCK_READ_SEND: begin
                     // Queue the read data
                     tx_queue[tx_queue_write_ptr] <= data_read_from_reg;
+                    tx_queue_write_ptr <= tx_queue_write_ptr + 1;
+                    block_counter <= block_counter + 1;
+
                     if (block_counter == length_reg - 1) begin
                         block_read_active <= 0;
                         proto_state <= PROTO_IDLE;
@@ -407,8 +411,10 @@ always @(posedge clk) begin
 end
 assign debug_out = rx_data_reg | rx_shift_reg | {7'b0, rx_data_valid}; 
 assign rx_state_mon     = rx_state[1:0];
-assign proto_state_mon  = proto_state[1:0]; 
+assign proto_state_mon  = proto_state[1:0];
+ 
 assign debug_rx_state = rx_state;
 assign debug_start_detected = (rx_state == RX_IDLE && !uart_rx_synced);
 assign debug_rx_data_valid  = rx_data_valid ; 
+assign tx_state_mon     = tx_state[1:0];
 endmodule
