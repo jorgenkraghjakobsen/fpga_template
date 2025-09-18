@@ -296,7 +296,11 @@ func writeHDLRegister(r RegMap) {
 			if !s.readonly {
 				//fmt.Printf("symbol:%s %d \n", s.name, s.address)
 				n := 40 - (len(sec.name) + len(s.name))
-				fmt.Printf("    reg__%s__%s%*s       <=  %d'b%08b;   //%s\n", sec.name, s.name, n, "", s.size, s.reset, s.shortDescription)
+				if s.size == 1 {
+					fmt.Printf("    reg__%s__%s%*s       <=  %d'b%b;   //%s\n", sec.name, s.name, n, "", s.size, s.reset, s.shortDescription)
+				} else {
+					fmt.Printf("    reg__%s__%s%*s       <=  %d'b%08b;   //%s\n", sec.name, s.name, n, "", s.size, s.reset, s.shortDescription)
+				}
 			}
 		}
 	}

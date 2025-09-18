@@ -15,6 +15,7 @@ module fpga_template_top
     output  uart_tx_mon, 
     output  uart_rx_mon,
     output  [1:0] rx_state_mon,
+    output  [3:0] proto_state_mon, 
     
     //---PWM-----------
     output pwm_out,
@@ -29,10 +30,10 @@ module fpga_template_top
     
 assign uart_rx_mon = uart_rx; 
 wire debug_rx_data_valid; 
-assign uart_tx_mon = debug_rx_data_valid; 
+assign uart_tx_mon = debug_rx_data_valid ; 
 
 assign gnd0 = 1'b0;
-assign debug_led_pin = sys_cfg.debug_led;
+assign debug_led_pin = {sys_cfg.debug_led[5:4], uart_debug_out[3:0]};
 
 //--------------------------------------------------------------------------------------------------------
 // Clock and reset   
@@ -47,6 +48,7 @@ assign resetb = btn_s1_resetb;
 // Register bank structs  
 //-------------------------------------------------------------------------------------------------------- 
 rb_sys_cfg_wire_t sys_cfg;
+assign sys_cfg.monitor_flag = 1'b0;
 
 //--------------------------------------------------------------------------------------------------------
 // Interface signals (shared between I2C and UART)
@@ -71,6 +73,7 @@ wire [7:0] uart_data_write_to_reg;
 wire uart_reg_en;
 wire uart_write_en;
 wire [1:0] uart_streamSt_mon;
+wire [7:0] uart_debug_out;
 
 // Debug UART signals
 assign debug_uart_send = debug_send;
@@ -110,9 +113,10 @@ uart_if uart_inst (
     // Debug interface
     .debug_send         (1'b0), //0debug_uart_send),
     .debug_data         (debug_uart_data),
-    //.debug_out          (debug_led_pin),
+    .debug_out          (uart_debug_out),
     .debug_rx_data_valid (debug_rx_data_valid),
-    .rx_state_mon       (rx_state_mon) 
+    .rx_state_mon       (rx_state_mon),
+    .proto_state_mon    (proto_state_mon) 
 );
 
 //--------------------------------------------------------------------------------------------------------

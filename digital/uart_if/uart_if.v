@@ -24,7 +24,9 @@ module uart_if (
     input [7:0] debug_data,
     output [7:0] debug_out,
     output [1:0] rx_state_mon,
+    output [1:0] proto_state_mon,
     output [1:0] debug_rx_state,
+
     output debug_start_detected,
     output debug_rx_data_valid
 );
@@ -37,10 +39,10 @@ parameter BIT_TIMER = CLK_FREQ / BAUD_RATE;  // ~234 for 27MHz/115200
 // UART receiver
 reg [15:0] rx_clk_divider;
 reg [3:0] rx_bit_count;
-reg [7:0] rx_data_reg;
-reg rx_data_valid;
+reg [7:0] rx_data_reg /* synthesis keep */;
+reg rx_data_valid /* synthesis keep */;
 reg [1:0] rx_state;
-reg [7:0] rx_shift_reg;
+reg [7:0] rx_shift_reg /* synthesis keep */;
 
 // UART RX synchronizer (critical for async signals)
 reg uart_rx_sync1, uart_rx_sync2;
@@ -57,7 +59,7 @@ reg [7:0] tx_shift_reg;
 reg tx_reg;
 
 // Protocol state machine
-reg [3:0] proto_state;
+reg [3:0] proto_state /* synthesis keep */;
 reg [7:0] cmd_reg;
 reg [7:0] addr_reg;
 reg [7:0] data_reg;
@@ -92,7 +94,6 @@ localparam PROTO_BLOCK_WRITE = 4'b0101;
 localparam PROTO_BLOCK_READ_START = 4'b0110;
 localparam PROTO_BLOCK_READ_WAIT = 4'b0111;
 localparam PROTO_BLOCK_READ_SEND = 4'b1000;
-localparam PROTO_CMD_DECODE = 4'b1001;
 
 
 assign uart_tx = tx_reg;
@@ -174,10 +175,9 @@ always @(posedge clk) begin
             RX_STOP: begin
                 if (rx_clk_divider == 0) begin
                     rx_state <= RX_IDLE;
-                    if (uart_rx_synced) begin  // Valid stop bit
-                        rx_data_reg <= rx_shift_reg;
-                        rx_data_valid <= 1;
-                    end
+                    // Temporarily bypass stop bit check for debugging
+                    rx_data_reg <= rx_shift_reg;
+                    rx_data_valid <= 1;
                 end 
                 else begin
                     rx_clk_divider <= rx_clk_divider - 1;
@@ -293,11 +293,25 @@ always @(posedge clk) begin
             case (proto_state)
                 PROTO_IDLE: begin
                     cmd_reg <= rx_data_reg;
-                    proto_state <= PROTO_CMD_DECODE;  // New intermediate state
+                    case (rx_data_reg)
+                        8'h57, 8'h77: begin  // 'W' or 'w' - Single write
+                            proto_state <= PROTO_ADDR;
+                        end
+                        8'h52, 8'h72: begin  // 'R' or 'r' - Single read
+                            proto_state <= PROTO_ADDR;
+                        end
+                        8'h42: begin  // 'B' - Block write
+                            proto_state <= PROTO_ADDR;
+                        end
+                        8'h62: begin  // 'b' - Block read
+                            proto_state <= PROTO_ADDR;
+                        end
+                        default: proto_state <= PROTO_IDLE;
+                    endcase
                 end
-                
+
                 PROTO_ADDR: begin
-                    addr_reg <= rx_data_reg;
+                    addr_reg     <= rx_data_reg;
                     current_addr <= rx_data_reg;
                     case (cmd_reg)  // Use registered cmd_reg
                         8'h57, 8'h77: begin  // Single write
@@ -313,7 +327,6 @@ always @(posedge clk) begin
                         default: proto_state <= PROTO_IDLE;
                     endcase
                 end
-                
 
                 PROTO_BLOCK_LENGTH: begin
                     length_reg <= rx_data_reg;
@@ -351,6 +364,11 @@ always @(posedge clk) begin
                     proto_state <= PROTO_IDLE;
                 end
 
+                default: proto_state <= PROTO_IDLE;
+            endcase
+        end 
+        else begin // not rx_data_valid
+            case (proto_state)
                 PROTO_RESPOND: begin
                     // Single read response
                     if (!tx_busy) begin
@@ -358,29 +376,6 @@ always @(posedge clk) begin
                         tx_queue_write_ptr <= tx_queue_write_ptr + 1;
                         proto_state <= PROTO_IDLE;
                     end
-                end
-
-                default: proto_state <= PROTO_IDLE;
-            endcase
-        end else begin
-            // Handle block read state machine without new RX data
-            case (proto_state)
-                PROTO_CMD_DECODE: begin  // ← Move this outside the rx_data_valid block!
-                    case (cmd_reg)
-                        8'h57, 8'h77: begin  // 'W' or 'w' - Single write
-                            proto_state <= PROTO_ADDR;
-                        end
-                        8'h52, 8'h72: begin  // 'R' or 'r' - Single read
-                            proto_state <= PROTO_ADDR;
-                        end
-                        8'h42: begin  // 'B' - Block write
-                            proto_state <= PROTO_ADDR;
-                        end
-                        8'h62: begin  // 'b' - Block read
-                            proto_state <= PROTO_ADDR;
-                        end
-                        default: proto_state <= PROTO_IDLE;
-                    endcase
                 end
 
                 PROTO_BLOCK_READ_START: begin
@@ -407,12 +402,15 @@ always @(posedge clk) begin
                         proto_state <= PROTO_BLOCK_READ_START;
                     end
                 end
+                // For all other states, just wait.
+                default: ;
             endcase
         end
     end
 end
-assign debug_out = cmd_reg; 
-assign rx_state_mon = proto_state[1:0];
+assign debug_out = rx_data_reg | rx_shift_reg | {7'b0, rx_data_valid}; 
+assign rx_state_mon     = rx_state[1:0];
+assign proto_state_mon  = proto_state[1:0]; 
 assign debug_rx_state = rx_state;
 assign debug_start_detected = (rx_state == RX_IDLE && !uart_rx_synced);
 assign debug_rx_data_valid  = rx_data_valid ; 

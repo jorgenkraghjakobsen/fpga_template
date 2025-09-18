@@ -48,8 +48,8 @@ begin
   begin
 
     // --- Section: sys_cfg  Offset: 0x0000  Size: 16
-    reg__sys_cfg__enable_stuf                             <=  1'b00000000;   //Enable stuf
-    reg__sys_cfg__enable_other                            <=  1'b00000001;   //Enable other stuf
+    reg__sys_cfg__enable_stuf                             <=  1'b0;   //Enable stuf
+    reg__sys_cfg__enable_other                            <=  1'b1;   //Enable other stuf
     reg__sys_cfg__pwm_duty                                <=  8'b10000101;   //Counter value for pwm
     reg__sys_cfg__debug_led                               <=  8'b10101010;   //Debug led signals
     reg__sys_cfg__debug_data0                             <=  8'b00000000;   //Data store
@@ -57,14 +57,14 @@ begin
     reg__sys_cfg__debug_data2                             <=  8'b00000010;   //Data store
 
     // --- Section: dsp_cfg  Offset: 0x0040  Size: 16
-    reg__dsp_cfg__bypass_enable                           <=  1'b00000001;   //Bypass filters on the DSP
-    reg__dsp_cfg__dc_filter_enable                        <=  1'b00000001;   //Bypass DC filter on the DSP
-    reg__dsp_cfg__bp_filter_enable                        <=  1'b00000001;   //Bypass bandpass filter on the DSP
-    reg__dsp_cfg__dec_filter_enable                       <=  1'b00000001;   //Bypass decimation filter on the DSP
-    reg__dsp_cfg__pli_filter_enable                       <=  1'b00000001;   //Bypass PLI filter on the DSP
-    reg__dsp_cfg__placeholder1                            <=  1'b00000000;   //placeholder
-    reg__dsp_cfg__placeholder2                            <=  1'b00000000;   //placeholder
-    reg__dsp_cfg__placeholder3                            <=  1'b00000000;   //placeholder
+    reg__dsp_cfg__bypass_enable                           <=  1'b1;   //Bypass filters on the DSP
+    reg__dsp_cfg__dc_filter_enable                        <=  1'b1;   //Bypass DC filter on the DSP
+    reg__dsp_cfg__bp_filter_enable                        <=  1'b1;   //Bypass bandpass filter on the DSP
+    reg__dsp_cfg__dec_filter_enable                       <=  1'b1;   //Bypass decimation filter on the DSP
+    reg__dsp_cfg__pli_filter_enable                       <=  1'b1;   //Bypass PLI filter on the DSP
+    reg__dsp_cfg__placeholder1                            <=  1'b0;   //placeholder
+    reg__dsp_cfg__placeholder2                            <=  1'b0;   //placeholder
+    reg__dsp_cfg__placeholder3                            <=  1'b0;   //placeholder
   end
   else
   begin
