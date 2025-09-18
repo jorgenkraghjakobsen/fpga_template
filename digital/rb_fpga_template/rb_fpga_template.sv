@@ -27,7 +27,10 @@ module rb_fpga_template
 reg        reg__sys_cfg__enable_stuf;                            //Enable stuf
 reg        reg__sys_cfg__enable_other;                           //Enable other stuf
 reg [7:0]  reg__sys_cfg__pwm_duty;                               //Counter value for pwm
-reg [5:0]  reg__sys_cfg__debug_led;                              //Debug led signals
+reg [7:0]  reg__sys_cfg__debug_led;                              //Debug led signals
+reg [7:0]  reg__sys_cfg__debug_data0;                            //Data store
+reg [7:0]  reg__sys_cfg__debug_data1;                            //Data store
+reg [7:0]  reg__sys_cfg__debug_data2;                            //Data store
 
     // --- Section: dsp_cfg  Offset: 0x0040  Size: 16
 reg        reg__dsp_cfg__bypass_enable;                          //Bypass filters on the DSP
@@ -48,7 +51,10 @@ begin
     reg__sys_cfg__enable_stuf                             <=  1'b00000000;   //Enable stuf
     reg__sys_cfg__enable_other                            <=  1'b00000001;   //Enable other stuf
     reg__sys_cfg__pwm_duty                                <=  8'b10000101;   //Counter value for pwm
-    reg__sys_cfg__debug_led                               <=  6'b00001111;   //Debug led signals
+    reg__sys_cfg__debug_led                               <=  8'b10101010;   //Debug led signals
+    reg__sys_cfg__debug_data0                             <=  8'b00000000;   //Data store
+    reg__sys_cfg__debug_data1                             <=  8'b00000001;   //Data store
+    reg__sys_cfg__debug_data2                             <=  8'b00000010;   //Data store
 
     // --- Section: dsp_cfg  Offset: 0x0040  Size: 16
     reg__dsp_cfg__bypass_enable                           <=  1'b00000001;   //Bypass filters on the DSP
@@ -71,7 +77,13 @@ begin
               end
         001 : reg__sys_cfg__pwm_duty                            <=   data_write_in[7:0];  // Counter value for pwm
  
-        002 : reg__sys_cfg__debug_led                           <=   data_write_in[5:0];  // Debug led signals
+        002 : reg__sys_cfg__debug_led                           <=   data_write_in[7:0];  // Debug led signals
+ 
+        004 : reg__sys_cfg__debug_data0                         <=   data_write_in[7:0];  // Data store
+ 
+        005 : reg__sys_cfg__debug_data1                         <=   data_write_in[7:0];  // Data store
+ 
+        006 : reg__sys_cfg__debug_data2                         <=   data_write_in[7:0];  // Data store
  
         064 : begin 
               reg__dsp_cfg__bypass_enable                       <=   data_write_in[0:0];  // Bypass filters on the DSP
@@ -103,7 +115,13 @@ begin
               end
         001 : data_read_out[7:0]  <=  reg__sys_cfg__pwm_duty;                   // Counter value for pwm
  
-        002 : data_read_out[5:0]  <=  reg__sys_cfg__debug_led;                  // Debug led signals
+        002 : data_read_out[7:0]  <=  reg__sys_cfg__debug_led;                  // Debug led signals
+ 
+        004 : data_read_out[7:0]  <=  reg__sys_cfg__debug_data0;                // Data store
+ 
+        005 : data_read_out[7:0]  <=  reg__sys_cfg__debug_data1;                // Data store
+ 
+        006 : data_read_out[7:0]  <=  reg__sys_cfg__debug_data2;                // Data store
  
         064 : begin 
               data_read_out[0:0]  <=  reg__dsp_cfg__bypass_enable;              // Bypass filters on the DSP
@@ -124,6 +142,9 @@ assign sys_cfg.enable_stuf                      = reg__sys_cfg__enable_stuf ;
 assign sys_cfg.enable_other                     = reg__sys_cfg__enable_other ;
 assign sys_cfg.pwm_duty                         = reg__sys_cfg__pwm_duty ;
 assign sys_cfg.debug_led                        = reg__sys_cfg__debug_led ;
+assign sys_cfg.debug_data0                      = reg__sys_cfg__debug_data0 ;
+assign sys_cfg.debug_data1                      = reg__sys_cfg__debug_data1 ;
+assign sys_cfg.debug_data2                      = reg__sys_cfg__debug_data2 ;
 assign dsp_cfg.bypass_enable                    = reg__dsp_cfg__bypass_enable ;
 assign dsp_cfg.dc_filter_enable                 = reg__dsp_cfg__dc_filter_enable ;
 assign dsp_cfg.bp_filter_enable                 = reg__dsp_cfg__bp_filter_enable ;

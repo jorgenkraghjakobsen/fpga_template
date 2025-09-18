@@ -10,8 +10,8 @@ module fpga_template_top
     input   i2c_scl,
     inout   i2c_sda,
     //---UART----------
-    input   uart_rx,    // Pin 18 - RX from USB/FTDI
-    output  uart_tx,    // Pin 17 - TX to USB/FTDI
+    input   uart_rx,    // Pin 18 - RX from USB/FTDI internal
+    output  uart_tx,    // Pin 17 - TX to USB/FTDI internal 
     output  uart_tx_mon, 
     output  uart_rx_mon,
     output  [1:0] rx_state_mon,
@@ -20,24 +20,26 @@ module fpga_template_top
     output pwm_out,
     //---Debug---------
     output  [5:0] debug_led_pin,
-    input   btn_s1_reset,     // Button 1 input
+    input   btn_s1_resetb,     // Button 1 input
     input   btn_s2,           // Button 2 input
     //---More Ground---
     output  gnd0            // Ground output with cranked up power
     );
     
+    
 assign uart_rx_mon = uart_rx; 
-assign uart_tx_mon = uart_tx; 
+wire debug_rx_data_valid; 
+assign uart_tx_mon = debug_rx_data_valid; 
 
 assign gnd0 = 1'b0;
-//assign debug_led_pin = sys_cfg.debug_led;
+assign debug_led_pin = sys_cfg.debug_led;
 
 //--------------------------------------------------------------------------------------------------------
 // Clock and reset   
 //-------------------------------------------------------------------------------------------------------- 
 
 wire resetb; 
-assign resetb = ~btn_s1_reset; 
+assign resetb = btn_s1_resetb; 
 
 // Direct clock insert PLL here when needed
 
@@ -95,7 +97,7 @@ i2c_if i2c_inst (
 //--------------------------------------------------------------------------------------------------------
 uart_if uart_inst (
     .clk                (clk),
-    .resetb             (!resetb),
+    .resetb             (resetb),
     .uart_rx            (uart_rx),
     .uart_tx            (uart_tx),
 
@@ -108,7 +110,8 @@ uart_if uart_inst (
     // Debug interface
     .debug_send         (1'b0), //0debug_uart_send),
     .debug_data         (debug_uart_data),
-    .debug_out          (debug_led_pin),
+    //.debug_out          (debug_led_pin),
+    .debug_rx_data_valid (debug_rx_data_valid),
     .rx_state_mon       (rx_state_mon) 
 );
 
@@ -195,7 +198,7 @@ always @(posedge clk) begin
 
         case (debug_state)
             DEBUG_IDLE: begin
-                if (btn_s2_edge) begin
+                if (!btn_s2_edge) begin
                     //debug_led_pin <= 6'b000000;
                     debug_state <= DEBUG_START;
                     debug_counter <= 16'h0000;

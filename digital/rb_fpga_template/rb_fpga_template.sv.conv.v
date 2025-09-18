@@ -30,7 +30,7 @@ module rb_fpga_template (
 	input wire write_en;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:20:2
 	// removed localparam type fpga_template_pkg_rb_sys_cfg_wire_t
-	inout wire [16:0] sys_cfg;
+	inout wire [42:0] sys_cfg;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:21:2
 	// removed localparam type fpga_template_pkg_rb_dsp_cfg_wire_t
 	inout wire [7:0] dsp_cfg;
@@ -41,158 +41,194 @@ module rb_fpga_template (
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:29:1
 	reg [7:0] reg__sys_cfg__pwm_duty;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:30:1
-	reg [5:0] reg__sys_cfg__debug_led;
+	reg [7:0] reg__sys_cfg__debug_led;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:31:1
+	reg [7:0] reg__sys_cfg__debug_data0;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:32:1
+	reg [7:0] reg__sys_cfg__debug_data1;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:33:1
-	reg reg__dsp_cfg__bypass_enable;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:34:1
-	reg reg__dsp_cfg__dc_filter_enable;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:35:1
-	reg reg__dsp_cfg__bp_filter_enable;
+	reg [7:0] reg__sys_cfg__debug_data2;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:36:1
-	reg reg__dsp_cfg__dec_filter_enable;
+	reg reg__dsp_cfg__bypass_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:37:1
-	reg reg__dsp_cfg__pli_filter_enable;
+	reg reg__dsp_cfg__dc_filter_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:38:1
-	reg reg__dsp_cfg__placeholder1;
+	reg reg__dsp_cfg__bp_filter_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:39:1
-	reg reg__dsp_cfg__placeholder2;
+	reg reg__dsp_cfg__dec_filter_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:40:1
-	reg reg__dsp_cfg__placeholder3;
+	reg reg__dsp_cfg__pli_filter_enable;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:41:1
+	reg reg__dsp_cfg__placeholder1;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:42:1
+	reg reg__dsp_cfg__placeholder2;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:43:1
+	reg reg__dsp_cfg__placeholder3;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:45:1
 	always @(posedge clk)
-		// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:44:3
+		// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:47:3
 		if (resetb == 0) begin
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:48:5
-			reg__sys_cfg__enable_stuf <= 1'b0;
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:49:5
-			reg__sys_cfg__enable_other <= 1'b1;
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:50:5
-			reg__sys_cfg__pwm_duty <= 8'b10000101;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:51:5
-			reg__sys_cfg__debug_led <= 6'b001111;
+			reg__sys_cfg__enable_stuf <= 1'b0;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:52:5
+			reg__sys_cfg__enable_other <= 1'b1;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:53:5
+			reg__sys_cfg__pwm_duty <= 8'b10000101;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:54:5
-			reg__dsp_cfg__bypass_enable <= 1'b1;
+			reg__sys_cfg__debug_led <= 8'b10101010;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:55:5
-			reg__dsp_cfg__dc_filter_enable <= 1'b1;
+			reg__sys_cfg__debug_data0 <= 8'b00000000;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:56:5
-			reg__dsp_cfg__bp_filter_enable <= 1'b1;
+			reg__sys_cfg__debug_data1 <= 8'b00000001;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:57:5
-			reg__dsp_cfg__dec_filter_enable <= 1'b1;
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:58:5
-			reg__dsp_cfg__pli_filter_enable <= 1'b1;
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:59:5
-			reg__dsp_cfg__placeholder1 <= 1'b0;
+			reg__sys_cfg__debug_data2 <= 8'b00000010;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:60:5
-			reg__dsp_cfg__placeholder2 <= 1'b0;
+			reg__dsp_cfg__bypass_enable <= 1'b1;
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:61:5
+			reg__dsp_cfg__dc_filter_enable <= 1'b1;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:62:5
+			reg__dsp_cfg__bp_filter_enable <= 1'b1;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:63:5
+			reg__dsp_cfg__dec_filter_enable <= 1'b1;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:64:5
+			reg__dsp_cfg__pli_filter_enable <= 1'b1;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:65:5
+			reg__dsp_cfg__placeholder1 <= 1'b0;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:66:5
+			reg__dsp_cfg__placeholder2 <= 1'b0;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:67:5
 			reg__dsp_cfg__placeholder3 <= 1'b0;
 		end
 		else
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:65:5
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:71:5
 			if (write_en)
-				// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:67:7
+				// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:73:7
 				case (address)
 					0: begin
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:69:15
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:75:15
 						reg__sys_cfg__enable_stuf <= data_write_in[0:0];
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:70:15
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:76:15
 						reg__sys_cfg__enable_other <= data_write_in[1:1];
 					end
 					1:
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:72:15
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:78:15
 						reg__sys_cfg__pwm_duty <= data_write_in[7:0];
 					2:
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:74:15
-						reg__sys_cfg__debug_led <= data_write_in[5:0];
-					64: begin
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:77:15
-						reg__dsp_cfg__bypass_enable <= data_write_in[0:0];
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:78:15
-						reg__dsp_cfg__dc_filter_enable <= data_write_in[1:1];
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:79:15
-						reg__dsp_cfg__bp_filter_enable <= data_write_in[2:2];
 						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:80:15
-						reg__dsp_cfg__dec_filter_enable <= data_write_in[3:3];
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:81:15
-						reg__dsp_cfg__pli_filter_enable <= data_write_in[4:4];
+						reg__sys_cfg__debug_led <= data_write_in[7:0];
+					4:
 						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:82:15
-						reg__dsp_cfg__placeholder1 <= data_write_in[5:5];
-						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:83:15
-						reg__dsp_cfg__placeholder2 <= data_write_in[6:6];
+						reg__sys_cfg__debug_data0 <= data_write_in[7:0];
+					5:
 						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:84:15
+						reg__sys_cfg__debug_data1 <= data_write_in[7:0];
+					6:
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:86:15
+						reg__sys_cfg__debug_data2 <= data_write_in[7:0];
+					64: begin
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:89:15
+						reg__dsp_cfg__bypass_enable <= data_write_in[0:0];
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:90:15
+						reg__dsp_cfg__dc_filter_enable <= data_write_in[1:1];
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:91:15
+						reg__dsp_cfg__bp_filter_enable <= data_write_in[2:2];
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:92:15
+						reg__dsp_cfg__dec_filter_enable <= data_write_in[3:3];
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:93:15
+						reg__dsp_cfg__pli_filter_enable <= data_write_in[4:4];
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:94:15
+						reg__dsp_cfg__placeholder1 <= data_write_in[5:5];
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:95:15
+						reg__dsp_cfg__placeholder2 <= data_write_in[6:6];
+						// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:96:15
 						reg__dsp_cfg__placeholder3 <= data_write_in[7:7];
 					end
 				endcase
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:91:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:103:1
 	always @(posedge clk)
-		// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:93:3
+		// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:105:3
 		if (resetb == 0)
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:94:5
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:106:5
 			data_read_out <= 8'b00000000;
 		else begin
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:97:5
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:109:5
 			data_read_out <= 8'b00000000;
-			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:98:5
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:110:5
 			case (address)
 				0: begin
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:100:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:112:15
 					data_read_out[0:0] <= reg__sys_cfg__enable_stuf;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:101:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:113:15
 					data_read_out[1:1] <= reg__sys_cfg__enable_other;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:102:15
-					data_read_out[2:2] <= sys_cfg[14];
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:114:15
+					data_read_out[2:2] <= sys_cfg[40];
 				end
 				1:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:104:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:116:15
 					data_read_out[7:0] <= reg__sys_cfg__pwm_duty;
 				2:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:106:15
-					data_read_out[5:0] <= reg__sys_cfg__debug_led;
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:118:15
+					data_read_out[7:0] <= reg__sys_cfg__debug_led;
+				4:
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:120:15
+					data_read_out[7:0] <= reg__sys_cfg__debug_data0;
+				5:
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:122:15
+					data_read_out[7:0] <= reg__sys_cfg__debug_data1;
+				6:
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:124:15
+					data_read_out[7:0] <= reg__sys_cfg__debug_data2;
 				64: begin
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:109:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:127:15
 					data_read_out[0:0] <= reg__dsp_cfg__bypass_enable;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:110:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:128:15
 					data_read_out[1:1] <= reg__dsp_cfg__dc_filter_enable;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:111:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:129:15
 					data_read_out[2:2] <= reg__dsp_cfg__bp_filter_enable;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:112:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:130:15
 					data_read_out[3:3] <= reg__dsp_cfg__dec_filter_enable;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:113:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:131:15
 					data_read_out[4:4] <= reg__dsp_cfg__pli_filter_enable;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:114:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:132:15
 					data_read_out[5:5] <= reg__dsp_cfg__placeholder1;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:115:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:133:15
 					data_read_out[6:6] <= reg__dsp_cfg__placeholder2;
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:116:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:134:15
 					data_read_out[7:7] <= reg__dsp_cfg__placeholder3;
 				end
 				default:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:118:17
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:136:17
 					data_read_out <= 8'b00000000;
 			endcase
 		end
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:123:1
-	assign sys_cfg[16] = reg__sys_cfg__enable_stuf;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:124:1
-	assign sys_cfg[15] = reg__sys_cfg__enable_other;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:125:1
-	assign sys_cfg[13-:8] = reg__sys_cfg__pwm_duty;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:126:1
-	assign sys_cfg[5-:6] = reg__sys_cfg__debug_led;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:127:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:141:1
+	assign sys_cfg[42] = reg__sys_cfg__enable_stuf;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:142:1
+	assign sys_cfg[41] = reg__sys_cfg__enable_other;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:143:1
+	assign sys_cfg[39-:8] = reg__sys_cfg__pwm_duty;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:144:1
+	assign sys_cfg[31-:8] = reg__sys_cfg__debug_led;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:145:1
+	assign sys_cfg[23-:8] = reg__sys_cfg__debug_data0;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:146:1
+	assign sys_cfg[15-:8] = reg__sys_cfg__debug_data1;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:147:1
+	assign sys_cfg[7-:8] = reg__sys_cfg__debug_data2;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:148:1
 	assign dsp_cfg[7] = reg__dsp_cfg__bypass_enable;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:128:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:149:1
 	assign dsp_cfg[6] = reg__dsp_cfg__dc_filter_enable;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:129:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:150:1
 	assign dsp_cfg[5] = reg__dsp_cfg__bp_filter_enable;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:130:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:151:1
 	assign dsp_cfg[4] = reg__dsp_cfg__dec_filter_enable;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:131:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:152:1
 	assign dsp_cfg[3] = reg__dsp_cfg__pli_filter_enable;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:132:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:153:1
 	assign dsp_cfg[2] = reg__dsp_cfg__placeholder1;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:133:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:154:1
 	assign dsp_cfg[1] = reg__dsp_cfg__placeholder2;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:134:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:155:1
 	assign dsp_cfg[0] = reg__dsp_cfg__placeholder3;
 endmodule

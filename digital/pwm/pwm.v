@@ -5,24 +5,24 @@ module pwm(
     output pwm_out          // pwm_output signal  
 );
 
-reg [7:0] counter;
-reg pwm = 1'b1;
+reg [7:0]  counter;
+reg pwm_r;
 
 always @(posedge clock_in or posedge reset) begin
     if (reset) begin
         counter <= 0;
-        pwm <= 1;
+        pwm_r   <= 1;
     end else begin
         if (counter < 255) begin
             counter <= counter + 1;
-            pwm <= !(counter < duty_cycle);
+            pwm_r   <= !(counter < duty_cycle);
         end else begin
             counter <= 0;
-            pwm <= 0;
+            pwm_r   <= 0;
         end
     end
 end
 
-assign pwm_out = !pwm;
+assign pwm_out = !pwm_r;
 
 endmodule

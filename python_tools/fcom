@@ -49,24 +49,132 @@ Examples:
 import sys
 import argparse
 import time
+import os
+import glob
+import json
 from fpga_uart_interface import FPGAUartInterface
 
-# Register map with symbolic names
-REGISTER_MAP = {
-    # System configuration section (0x00-0x0F)
-    'sys_cfg_control': 0x00,
-    'sys_cfg': 0x00,
-    'pwm_duty': 0x01,
-    'debug_led': 0x02,
-    'debug_leds': 0x02,
+def load_register_map():
+    """Load register map from .regfile_<project_name> or reg_file_<project_name> file."""
+    # Search for register files in current directory and parent directories
+    search_paths = ['.', '..', '../..', '../../digital/rb_*']
 
-    # DSP configuration section (0x40-0x4F)
-    'dsp_cfg_control': 0x40,
-    'dsp_cfg': 0x40,
-}
+    register_map = {}
+    addr_to_name = {}
+    register_info = {}  # Store additional info like description, size, etc.
 
-# Reverse lookup for addresses to names
-ADDR_TO_NAME = {v: k for k, v in REGISTER_MAP.items()}
+    for search_path in search_paths:
+        # Look for reg_file_* files (both text and JSON formats)
+        pattern = os.path.join(search_path, 'reg_file_*')
+        files = glob.glob(pattern)
+
+        for file_path in files:
+            if file_path.endswith('.json'):
+                # Parse JSON format
+                try:
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                        # Remove comment line if present
+                        if content.startswith('//'):
+                            content = '\n'.join(content.split('\n')[1:])
+                        data = json.loads(content)
+
+                    for reg in data.get('registers', []):
+                        symbol = reg['symbol']
+                        address = int(reg['address'], 16)
+
+                        # Store full symbol and short version (without prefix)
+                        register_map[symbol] = address
+
+                        # Create short version (e.g., sys_cfg.pwm_duty -> pwm_duty)
+                        short_symbol = symbol.split('.')[-1]
+                        if short_symbol not in register_map:
+                            register_map[short_symbol] = address
+
+                        # Store in reverse lookup (prefer full symbol name)
+                        if address not in addr_to_name:
+                            addr_to_name[address] = symbol
+
+                        # Store additional register information
+                        register_info[address] = {
+                            'symbol': symbol,
+                            'description': reg.get('description', ''),
+                            'size': int(reg.get('size', 8)),
+                            'pos': int(reg.get('pos', 0)),
+                            'reset': int(reg.get('reset', 0))
+                        }
+
+                    return register_map, addr_to_name, register_info
+
+                except (json.JSONDecodeError, KeyError, ValueError) as e:
+                    continue
+
+            else:
+                # Parse text format: symbol address pos size reset description
+                try:
+                    with open(file_path, 'r') as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line or line.startswith('//'):
+                                continue
+
+                            parts = line.split()
+                            if len(parts) >= 6:
+                                symbol = parts[0]
+                                address = int(parts[1], 16)
+                                pos = int(parts[2])
+                                size = int(parts[3])
+                                reset = int(parts[4])
+                                description = ' '.join(parts[5:])
+
+                                # Store full symbol and short version
+                                register_map[symbol] = address
+
+                                # Create short version (e.g., sys_cfg.pwm_duty -> pwm_duty)
+                                short_symbol = symbol.split('.')[-1]
+                                if short_symbol not in register_map:
+                                    register_map[short_symbol] = address
+
+                                # Store in reverse lookup (prefer full symbol name)
+                                if address not in addr_to_name:
+                                    addr_to_name[address] = symbol
+
+                                # Store additional register information
+                                register_info[address] = {
+                                    'symbol': symbol,
+                                    'description': description,
+                                    'size': size,
+                                    'pos': pos,
+                                    'reset': reset
+                                }
+
+                    if register_map:  # If we found registers, return them
+                        return register_map, addr_to_name, register_info
+
+                except (IOError, ValueError) as e:
+                    continue
+
+    # Fallback to static register map if no register file found
+    fallback_map = {
+        # System configuration section (0x00-0x0F)
+        'sys_cfg_control': 0x00,
+        'sys_cfg': 0x00,
+        'pwm_duty': 0x01,
+        'debug_led': 0x02,
+        'debug_leds': 0x02,
+
+        # DSP configuration section (0x40-0x4F)
+        'dsp_cfg_control': 0x40,
+        'dsp_cfg': 0x40,
+    }
+
+    fallback_addr_to_name = {v: k for k, v in fallback_map.items()}
+    fallback_info = {}
+
+    return fallback_map, fallback_addr_to_name, fallback_info
+
+# Load register map dynamically
+REGISTER_MAP, ADDR_TO_NAME, REGISTER_INFO = load_register_map()
 
 def parse_value(value_str):
     """Parse a value string that can be hex, decimal, or binary."""
@@ -283,16 +391,24 @@ def cmd_dump(fpga, args):
                 formatted_value = format_output(value, fpga.output_format)
                 binary = f"{value:08b}"
 
-                # Add description for known registers
+                # Add description from register info if available
                 desc = ""
-                if addr == 0x00:
-                    desc = "System control bits"
-                elif addr == 0x01:
-                    desc = f"PWM duty ({(value/255*100):.1f}%)"
-                elif addr == 0x02:
-                    desc = "Debug LED pattern"
-                elif addr == 0x40:
-                    desc = "DSP configuration"
+                if addr in REGISTER_INFO:
+                    reg_info = REGISTER_INFO[addr]
+                    desc = reg_info['description']
+                    # Special formatting for PWM duty
+                    if 'pwm' in reg_info['symbol'].lower() and 'duty' in reg_info['symbol'].lower():
+                        desc += f" ({(value/255*100):.1f}%)"
+                else:
+                    # Fallback descriptions for common addresses
+                    if addr == 0x00:
+                        desc = "System control bits"
+                    elif addr == 0x01:
+                        desc = f"PWM duty ({(value/255*100):.1f}%)"
+                    elif addr == 0x02:
+                        desc = "Debug LED pattern"
+                    elif addr == 0x40:
+                        desc = "DSP configuration"
 
                 print(f"{format_output(addr, 'h'):<8} {reg_name:<16} {formatted_value:<8} {binary:<8} {desc}")
             else:
@@ -377,25 +493,48 @@ def cmd_info(fpga, args):
     """Info command: info"""
     print("FPGA Register Map:")
     print("==================")
-    print("Symbol              Address  Description")
-    print("-" * 45)
+    print("Symbol                        Address  Size  Description")
+    print("-" * 75)
+
+    # Get unique addresses and their primary symbols
+    unique_addresses = {}
+    for symbol, address in REGISTER_MAP.items():
+        if address not in unique_addresses:
+            unique_addresses[address] = symbol
 
     # Sort by address
-    sorted_regs = sorted(REGISTER_MAP.items(), key=lambda x: x[1])
-    for symbol, address in sorted_regs:
-        desc = ""
-        if address == 0x00:
-            desc = "System configuration control"
-        elif address == 0x01:
-            desc = "PWM duty cycle (8-bit)"
-        elif address == 0x02:
-            desc = "Debug LED pattern (6-bit)"
-        elif address == 0x40:
-            desc = "DSP configuration control"
+    sorted_addrs = sorted(unique_addresses.items(), key=lambda x: x[0])
+    for address, symbol in sorted_addrs:
+        # Get description and size from register info if available
+        if address in REGISTER_INFO:
+            reg_info = REGISTER_INFO[address]
+            desc = reg_info['description']
+            size = reg_info['size']
+        else:
+            # Fallback descriptions
+            size = 8
+            if address == 0x00:
+                desc = "System configuration control"
+            elif address == 0x01:
+                desc = "PWM duty cycle"
+            elif address == 0x02:
+                desc = "Debug LED pattern"
+                size = 6
+            elif address == 0x40:
+                desc = "DSP configuration control"
+            else:
+                desc = "Unknown register"
 
-        print(f"{symbol:<18} {format_output(address, 'h'):<8} {desc}")
+        print(f"{symbol:<28} {format_output(address, 'h'):<8} {size:<4}  {desc}")
 
     print(f"\nConnection: {fpga.port} @ {fpga.baudrate} baud")
+
+    # Show register file source if found
+    if REGISTER_INFO:
+        print(f"Register definitions loaded from register file")
+    else:
+        print(f"Using fallback register definitions (no register file found)")
+
     return True
 
 def show_help():

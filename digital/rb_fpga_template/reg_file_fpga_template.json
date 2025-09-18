@@ -41,10 +41,37 @@
       "symbol"      : "sys_cfg.debug_led",
       "address"     : "0x02",
       "pos"         : "0",
-      "size"        : "6",
-      "reset"       : "15",
+      "size"        : "8",
+      "reset"       : "170",
       "readonly"    : "0",
       "description" : "Debug led signals"
+    },
+    {
+      "symbol"      : "sys_cfg.debug_data0",
+      "address"     : "0x04",
+      "pos"         : "0",
+      "size"        : "8",
+      "reset"       : "0",
+      "readonly"    : "0",
+      "description" : "Data store"
+    },
+    {
+      "symbol"      : "sys_cfg.debug_data1",
+      "address"     : "0x05",
+      "pos"         : "0",
+      "size"        : "8",
+      "reset"       : "1",
+      "readonly"    : "0",
+      "description" : "Data store"
+    },
+    {
+      "symbol"      : "sys_cfg.debug_data2",
+      "address"     : "0x06",
+      "pos"         : "0",
+      "size"        : "8",
+      "reset"       : "2",
+      "readonly"    : "0",
+      "description" : "Data store"
     },
     {
       "symbol"      : "dsp_cfg.bypass_enable",

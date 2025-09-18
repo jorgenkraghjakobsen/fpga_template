@@ -11,7 +11,10 @@ typedef struct packed {
   logic       enable_other;                    // Enable other stuf
   logic       monitor_flag;                    // Monitor internal flag
   logic [7:0] pwm_duty;                        // Counter value for pwm
-  logic [5:0] debug_led;                       // Debug led signals
+  logic [7:0] debug_led;                       // Debug led signals
+  logic [7:0] debug_data0;                     // Data store
+  logic [7:0] debug_data1;                     // Data store
+  logic [7:0] debug_data2;                     // Data store
 } rb_sys_cfg_wire_t;
 
 // Wire interface for dsp_cfg

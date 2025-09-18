@@ -58,7 +58,10 @@ func main() {
 		{1, "enable_other", 		"sys_cfg", 0, 1, 1, 1, 		false, "Enable other stuf", "Long"},
 		{2, "monitor_flag", 		"sys_cfg", 0, 1, 2, 0, 		true,  "Monitor internal flag", "Long"}, //Read only
 		{3, "pwm_duty",			 	"sys_cfg", 1, 8, 0, 0x85, 	false, "Counter value for pwm", "Long"}, 
-		{4, "debug_led", 			"sys_cfg", 2, 6, 0, 0x0f, 	false, "Debug led signals", "Debug led signals"},
+		{4, "debug_led", 			"sys_cfg", 2, 8, 0, 0xaa, 	false, "Debug led signals", "Debug led signals"},
+		{5, "debug_data0", 			"sys_cfg", 4, 8, 0, 0x00, 	false, "Data store", "Data store"},
+		{6, "debug_data1", 			"sys_cfg", 5, 8, 0, 0x01, 	false, "Data store", "Data store"},
+		{7, "debug_data2", 			"sys_cfg", 6, 8, 0, 0x02, 	false, "Data store", "Data store"},
 	}
 
 	//syid, name, 					section, address, size, pos, reset, readonly, shortDescription, longDescription 		 make the rest of the 3 registers for adress 0, and offseet the rest
