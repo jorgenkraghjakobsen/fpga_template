@@ -5,7 +5,7 @@ DEVICE		= GW1NR-LV9QN88PC6/I5
 PROJ		= fpga_template
 
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-WS			= $(abspath $(MAKEFILE_DIR)/../..)
+WS		= $(abspath $(MAKEFILE_DIR)/../..)
 OBJ 		= $(WS)/obj/$(PROJ)
 
 SRC_INC 	= $(WS)/digital
@@ -51,12 +51,6 @@ conv2v: $(SRC_SV)
 	$(foreach s,$(SRC_SV), \
 	  $(shell sv2v -v -I$(WS)/digital --siloed $(PKG) $(s) > $(s).conv.v) \
 	  $(info Converting systemverilog $(s) : ))
-src: 
-	@echo $(SRC_SV)
-
-
-s: 
-	@echo $(SRC)	
 
 $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 
 	echo "#Yosys build script" > $(OBJ)/yosys.cmd
