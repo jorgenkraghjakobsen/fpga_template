@@ -30,10 +30,10 @@ module fpga_template_top
     
 assign uart_rx_mon = uart_rx; 
 wire debug_rx_data_valid; 
-assign uart_tx_mon = debug_rx_data_valid ; 
+assign uart_tx_mon = uart_tx; 
 
 assign gnd0 = 1'b0;
-assign debug_led_pin = {sys_cfg.debug_led[5:4], uart_debug_out[3:0]};
+assign debug_led_pin = sys_cfg.debug_led;
 
 //--------------------------------------------------------------------------------------------------------
 // Clock and reset   

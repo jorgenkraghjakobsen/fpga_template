@@ -392,10 +392,7 @@ always @(posedge clk) begin
                 PROTO_BLOCK_READ_SEND: begin
                     // Queue the read data
                     tx_queue[tx_queue_write_ptr] <= data_read_from_reg;
-                    tx_queue_write_ptr <= tx_queue_write_ptr + 1;
-                    block_counter <= block_counter + 1;
-
-                    if (block_counter >= length_reg - 1) begin
+                    if (block_counter == length_reg - 1) begin
                         block_read_active <= 0;
                         proto_state <= PROTO_IDLE;
                     end else begin

@@ -50,14 +50,13 @@ module fpga_template_top (
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:32:1
 	wire debug_rx_data_valid;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:33:1
-	assign uart_tx_mon = debug_rx_data_valid;
+	assign uart_tx_mon = uart_tx;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:35:1
 	assign gnd0 = 1'b0;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:36:1
 	// removed localparam type fpga_template_pkg_rb_sys_cfg_wire_t
 	wire [42:0] sys_cfg;
-	wire [7:0] uart_debug_out;
-	assign debug_led_pin = {sys_cfg[29:28], uart_debug_out[3:0]};
+	assign debug_led_pin = sys_cfg[31-:8];
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:42:1
 	wire resetb;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:43:1
@@ -98,6 +97,7 @@ module fpga_template_top (
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:75:1
 	wire [1:0] uart_streamSt_mon;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:76:1
+	wire [7:0] uart_debug_out;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:79:1
 	reg debug_send;
 	wire debug_uart_send;
