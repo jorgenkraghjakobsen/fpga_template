@@ -9,10 +9,8 @@ Written by Claude Code, 2024
 Usage:
 fcom <command> [address|symbol] [[data] ...] [options]
 
-Basic commands:  w - Write to register(s) in device (supports multibyte)
-                 r - Read from registers in device
-                 b - Block write to consecutive registers
-                 br - Block read from consecutive registers
+Basic commands:  w - Write to register(s) in device. Block write: w <addr> <byte0> ... <byteN>
+                 r - Read from registers in device. Block read: r <addr> <bytes to read>
                  d - Dump register range
                  led - Control debug LEDs
                  pwm - Set PWM duty cycle
@@ -37,13 +35,12 @@ Options:
 
 Examples:
     fcom r 0x01          # Read PWM duty register
+    fcom r 0x00 3        # Block read 3 bytes starting at 0x00
     fcom w pwm_duty 128  # Write to PWM duty register
-    fcom w 2 0x02 0x03   # Write 0x02 to addr 2, 0x03 to addr 3
+    fcom w 0x10 0xAA 0xBB 0xCC  # Block write starting at 0x10
     fcom led 0x2A        # Set LED pattern
     fcom pwm 75.0        # Set PWM to 75% duty cycle
     fcom d 0x00 0x05     # Dump registers 0x00 to 0x05
-    fcom b 0x10 0xAA 0xBB 0xCC  # Block write starting at 0x10
-    fcom br 0x00 3       # Block read 3 bytes starting at 0x00
 """
 
 import sys
@@ -171,7 +168,7 @@ def load_register_map():
     fallback_addr_to_name = {v: k for k, v in fallback_map.items()}
     fallback_info = {}
 
-    return fallback_map, fallback_addr_to_name, fallback_info
+    return fallback_map, addr_to_name, fallback_info
 
 # Load register map dynamically
 REGISTER_MAP, ADDR_TO_NAME, REGISTER_INFO = load_register_map()
@@ -210,7 +207,7 @@ def get_register_name(address):
     return ADDR_TO_NAME.get(address, f"0x{address:02X}")
 
 def cmd_read(fpga, args):
-    """Read command: r <address>"""
+    """Read command: r <address> [<bytes_to_read>]"""
     if len(args) < 1:
         print("Error: Read command requires an address")
         return False
@@ -221,20 +218,45 @@ def cmd_read(fpga, args):
             print(f"Error: Address {address} out of range (0-255)")
             return False
 
-        value = fpga.read_register(address)
-        if value is not None:
-            reg_name = get_register_name(address)
-            formatted_value = format_output(value, fpga.output_format)
-            if fpga.verbose >= 1:
-                print(f"Read {reg_name}: {formatted_value}")
+        # Block read if two arguments are provided
+        if len(args) == 2:
+            length = parse_value(args[1])
+            if not (1 <= length <= 255):
+                print(f"Error: Length {length} out of range (1-255)")
+                return False
+
+            data = fpga.read_block(address, length)
+            if data is not None:
+                if fpga.verbose >= 1:
+                    print(f"Block read from {format_output(address, 'h')} ({length} bytes):")
+                    for i, value in enumerate(data):
+                        addr = address + i
+                        reg_name = get_register_name(addr)
+                        print(f"  {reg_name}: {format_output(value, fpga.output_format)}")
+                else:
+                    print(' '.join(format_output(d, fpga.output_format) for d in data))
+                return True
             else:
-                print(formatted_value)
-            return True
+                print(f"Error: Failed to read block from {format_output(address, 'h')}")
+                return False
+
+        # Single register read
         else:
-            print(f"Error: Failed to read from address {format_output(address, 'h')}")
-            return False
+            value = fpga.read_register(address)
+            if value is not None:
+                reg_name = get_register_name(address)
+                formatted_value = format_output(value, fpga.output_format)
+                if fpga.verbose >= 1:
+                    print(f"Read {reg_name}: {formatted_value}")
+                else:
+                    print(formatted_value)
+                return True
+            else:
+                print(f"Error: Failed to read from address {format_output(address, 'h')}")
+                return False
+
     except ValueError as e:
-        print(f"Error: Invalid address '{args[0]}': {e}")
+        print(f"Error: Invalid value: {e}")
         return False
 
 def cmd_write(fpga, args):
@@ -275,88 +297,17 @@ def cmd_write(fpga, args):
                 print(f"Error: Failed to write to address {format_output(start_address, 'h')}")
                 return False
         else:
-            # Multiple data values - write to consecutive addresses
-            success = True
-            for i, data in enumerate(data_values):
-                address = start_address + i
-                if not fpga.write_register(address, data):
-                    print(f"Error: Failed to write to address {format_output(address, 'h')}")
-                    success = False
-                    break
-                elif fpga.verbose >= 1:
-                    reg_name = get_register_name(address)
-                    print(f"Write {reg_name}: {format_output(data, fpga.output_format)}")
-
-            return success
-
-    except ValueError as e:
-        print(f"Error: Invalid value: {e}")
-        return False
-
-def cmd_block_write(fpga, args):
-    """Block write command: b <start_address> <data1> <data2> ..."""
-    if len(args) < 2:
-        print("Error: Block write requires start address and at least one data byte")
-        return False
-
-    try:
-        start_addr = parse_address(args[0])
-        data_bytes = [parse_value(arg) for arg in args[1:]]
-
-        if not (0 <= start_addr <= 255):
-            print(f"Error: Start address {start_addr} out of range (0-255)")
-            return False
-
-        for i, data in enumerate(data_bytes):
-            if not (0 <= data <= 255):
-                print(f"Error: Data byte {i+1} ({data}) out of range (0-255)")
+            # Block write for multiple data values
+            success = fpga.write_block(start_address, data_values)
+            if success:
+                if fpga.verbose >= 1:
+                    data_str = ' '.join(format_output(d, fpga.output_format) for d in data_values)
+                    print(f"Block write to {format_output(start_address, 'h')}: {data_str}")
+                return True
+            else:
+                print(f"Error: Failed to write block starting at {format_output(start_address, 'h')}")
                 return False
 
-        success = fpga.write_block(start_addr, data_bytes)
-        if success:
-            if fpga.verbose >= 1:
-                data_str = ' '.join(format_output(d, fpga.output_format) for d in data_bytes)
-                print(f"Block write to {format_output(start_addr, 'h')}: {data_str}")
-            return True
-        else:
-            print(f"Error: Failed to write block starting at {format_output(start_addr, 'h')}")
-            return False
-    except ValueError as e:
-        print(f"Error: Invalid value: {e}")
-        return False
-
-def cmd_block_read(fpga, args):
-    """Block read command: br <start_address> <length>"""
-    if len(args) < 2:
-        print("Error: Block read requires start address and length")
-        return False
-
-    try:
-        start_addr = parse_address(args[0])
-        length = parse_value(args[1])
-
-        if not (0 <= start_addr <= 255):
-            print(f"Error: Start address {start_addr} out of range (0-255)")
-            return False
-
-        if not (1 <= length <= 255):
-            print(f"Error: Length {length} out of range (1-255)")
-            return False
-
-        data = fpga.read_block(start_addr, length)
-        if data is not None:
-            if fpga.verbose >= 1:
-                print(f"Block read from {format_output(start_addr, 'h')} ({length} bytes):")
-                for i, value in enumerate(data):
-                    addr = start_addr + i
-                    reg_name = get_register_name(addr)
-                    print(f"  {reg_name}: {format_output(value, fpga.output_format)}")
-            else:
-                print(' '.join(format_output(d, fpga.output_format) for d in data))
-            return True
-        else:
-            print(f"Error: Failed to read block from {format_output(start_addr, 'h')}")
-            return False
     except ValueError as e:
         print(f"Error: Invalid value: {e}")
         return False
@@ -552,7 +503,7 @@ def main():
     baudrate = 115200
     timeout = 2.0
     output_format = 'h'  # hex
-    verbose = 1
+    verbose = 0
 
     # Parse options
     args = sys.argv[1:]
@@ -623,7 +574,7 @@ def main():
     cmd_args = filtered_args[1:]
 
     # Create FPGA interface
-    fpga = FPGAUartInterface(port=port, baudrate=baudrate, timeout=timeout)
+    fpga = FPGAUartInterface(port=port, baudrate=baudrate, timeout=timeout, verbose=verbose > 0)
     fpga.output_format = output_format
     fpga.verbose = verbose
 
@@ -640,10 +591,7 @@ def main():
             success = cmd_read(fpga, cmd_args)
         elif command == 'w' or command == 'write':
             success = cmd_write(fpga, cmd_args)
-        elif command == 'b' or command == 'block_write':
-            success = cmd_block_write(fpga, cmd_args)
-        elif command == 'br' or command == 'block_read':
-            success = cmd_block_read(fpga, cmd_args)
+
         elif command == 'd' or command == 'dump':
             success = cmd_dump(fpga, cmd_args)
         elif command == 'led' or command == 'leds':

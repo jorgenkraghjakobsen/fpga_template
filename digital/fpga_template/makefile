@@ -61,7 +61,7 @@ $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ)
 
 # Place and Route
 $(OBJ)/$(PROJ)_pnr.json: $(OBJ)/$(PROJ).json $(WS)/digital/$(PROJ)/tangnano9k.cst
-	nextpnr-himbaechel --json $(OBJ)/$(PROJ).json --write $(OBJ)/$(PROJ)_pnr.json \
+	nextpnr-himbaechel --freq 27 --json $(OBJ)/$(PROJ).json --write $(OBJ)/$(PROJ)_pnr.json \
 	--device ${DEVICE} --vopt family=${FAMILY} --vopt cst=$(WS)/digital/$(PROJ)/tangnano9k.cst
 
 

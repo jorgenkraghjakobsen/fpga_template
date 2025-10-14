@@ -32,7 +32,7 @@ class FPGAUartInterface:
     """UART interface for FPGA register bank communication."""
 
     # On tangnano9k ttyUSB1 is used for uart communication
-    def __init__(self, port: str = '/dev/ttyUSB1', baudrate: int = 115200, timeout: float = 1.0):
+    def __init__(self, port: str = '/dev/ttyUSB1', baudrate: int = 115200, timeout: float = 1.0, verbose: bool = True):
         """
         Initialize UART connection to FPGA.
 
@@ -40,11 +40,13 @@ class FPGAUartInterface:
             port: Serial port device (e.g., '/dev/ttyUSB0', '/dev/ttyUSB1')
             baudrate: UART baud rate (default 115200, matching FPGA)
             timeout: Read timeout in seconds
+            verbose: Whether to print connection messages
         """
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
         self.serial = None
+        self.verbose = verbose
 
         # Register map for convenience
         self.registers = {
@@ -76,7 +78,8 @@ class FPGAUartInterface:
             # Clear any existing data in buffers
             self.serial.reset_input_buffer()
             self.serial.reset_output_buffer()
-            print(f"Connected to FPGA on {self.port} at {self.baudrate} baud")
+            if self.verbose:
+                print(f"Connected to FPGA on {self.port} at {self.baudrate} baud")
             return True
         except serial.SerialException as e:
             print(f"Failed to connect to {self.port}: {e}")
@@ -86,7 +89,8 @@ class FPGAUartInterface:
         """Close UART connection."""
         if self.serial and self.serial.is_open:
             self.serial.close()
-            print("Disconnected from FPGA")
+            if self.verbose:
+                print("Disconnected from FPGA")
 
     def write_register(self, address: int, data: int) -> bool:
         """
@@ -108,6 +112,8 @@ class FPGAUartInterface:
             cmd = bytes([ord('W'), address & 0xFF, data & 0xFF])
             self.serial.write(cmd)
             self.serial.flush()
+            time.sleep(0.05) # Wait for FPGA to process
+            self.serial.reset_input_buffer() # Clear any response
             return True
         except serial.SerialException as e:
             print(f"Write error: {e}")
@@ -173,6 +179,8 @@ class FPGAUartInterface:
             cmd += bytes([d & 0xFF for d in data])
             self.serial.write(cmd)
             self.serial.flush()
+            time.sleep(0.05) # Wait for FPGA to process
+            self.serial.reset_input_buffer() # Clear any response
             return True
         except serial.SerialException as e:
             print(f"Block write error: {e}")
@@ -206,13 +214,23 @@ class FPGAUartInterface:
             self.serial.write(cmd)
             self.serial.flush()
 
-            # Read response
-            response = self.serial.read(length)
-            if len(response) == length:
-                return list(response)
-            else:
+            # WORKAROUND: FPGA sends too much data, need to find the correct bytes
+            # Read more data than requested to handle FPGA buffer issue
+            max_response_size = 256
+            response = self.serial.read(max_response_size)
+
+            if len(response) < length:
                 print(f"Block read timeout: got {len(response)} of {length} bytes")
                 return None
+
+            # FPGA sends correct data at the end of the response
+            # Find the last occurrence of the expected length
+            if len(response) > length:
+                # Take the last 'length' bytes which should be the correct data
+                correct_data = response[-length:]
+                return list(correct_data)
+            else:
+                return list(response[:length])
 
         except serial.SerialException as e:
             print(f"Block read error: {e}")

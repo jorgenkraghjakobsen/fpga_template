@@ -11,11 +11,11 @@ module fpga_template_top (
 	uart_rx_mon,
 	rx_state_mon,
 	proto_state_mon,
+	tx_state_mon,
 	pwm_out,
 	debug_led_pin,
 	btn_s1_resetb,
-	btn_s2,
-	gnd0
+	btn_s2
 );
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:8:5
 	input clk;
@@ -31,20 +31,20 @@ module fpga_template_top (
 	output wire uart_tx_mon;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:16:5
 	output wire uart_rx_mon;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:17:5
-	output wire [1:0] rx_state_mon;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:18:5
+	output wire [1:0] rx_state_mon;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:19:5
 	output wire [3:0] proto_state_mon;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:21:5
-	output wire pwm_out;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:20:5
+	output wire [1:0] tx_state_mon;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:23:5
-	output wire [5:0] debug_led_pin;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:24:5
-	input btn_s1_resetb;
+	output wire pwm_out;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:25:5
-	input btn_s2;
+	output wire [5:0] debug_led_pin;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:26:5
+	input btn_s1_resetb;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:27:5
-	output wire gnd0;
+	input btn_s2;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:31:1
 	assign uart_rx_mon = uart_rx;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:32:1
@@ -52,61 +52,59 @@ module fpga_template_top (
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:33:1
 	assign uart_tx_mon = uart_tx;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:35:1
-	assign gnd0 = 1'b0;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:36:1
 	// removed localparam type fpga_template_pkg_rb_sys_cfg_wire_t
 	wire [42:0] sys_cfg;
 	assign debug_led_pin = sys_cfg[31-:8];
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:42:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:41:1
 	wire resetb;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:43:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:42:1
 	assign resetb = btn_s1_resetb;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:49:1
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:50:1
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:51:1
 	assign sys_cfg[40] = 1'b0;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:56:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:55:1
 	wire [7:0] rb_address;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:57:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:56:1
 	wire [7:0] rb_data_write_to_reg;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:58:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:57:1
 	wire [7:0] rb_data_read_from_reg;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:59:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:58:1
 	wire rb_reg_en;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:60:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:59:1
 	wire rb_write_en;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:61:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:60:1
 	wire [1:0] rb_streamSt_mon;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:64:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:63:1
 	wire [7:0] i2c_address;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:65:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:64:1
 	wire [7:0] i2c_data_write_to_reg;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:66:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:65:1
 	wire i2c_reg_en;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:67:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:66:1
 	wire i2c_write_en;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:68:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:67:1
 	wire [1:0] i2c_streamSt_mon;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:71:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:70:1
 	wire [7:0] uart_address;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:72:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:71:1
 	wire [7:0] uart_data_write_to_reg;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:73:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:72:1
 	wire uart_reg_en;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:74:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:73:1
 	wire uart_write_en;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:75:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:74:1
 	wire [1:0] uart_streamSt_mon;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:76:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:75:1
 	wire [7:0] uart_debug_out;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:79:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:78:1
 	reg debug_send;
 	wire debug_uart_send;
 	assign debug_uart_send = debug_send;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:80:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:79:1
 	reg [7:0] debug_byte;
 	wire debug_uart_data;
 	assign debug_uart_data = debug_byte;
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:85:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:84:1
 	i2c_if i2c_inst(
 		.clk(clk),
 		.resetb(resetb),
@@ -119,7 +117,7 @@ module fpga_template_top (
 		.write_en(i2c_write_en),
 		.streamSt_mon(i2c_streamSt_mon)
 	);
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:101:1
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:100:1
 	uart_if uart_inst(
 		.clk(clk),
 		.resetb(resetb),
@@ -131,12 +129,13 @@ module fpga_template_top (
 		.reg_en(uart_reg_en),
 		.write_en(uart_write_en),
 		.streamSt_mon(uart_streamSt_mon),
-		.debug_send(1'b0),
+		.debug_send(debug_uart_send),
 		.debug_data(debug_uart_data),
 		.debug_out(uart_debug_out),
 		.debug_rx_data_valid(debug_rx_data_valid),
-		.rx_state_mon(rx_state_mon),
-		.proto_state_mon(proto_state_mon)
+		.rx_state_mon(),
+		.proto_state_mon(),
+		.tx_state_mon()
 	);
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:130:1
 	assign rb_address = uart_address;

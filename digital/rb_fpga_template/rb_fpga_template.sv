@@ -106,7 +106,6 @@ begin
     data_read_out <= 8'b00000000;
   else
   begin
-    data_read_out <= 8'b00000000;
     case (address)
         000 : begin 
               data_read_out[0:0]  <=  reg__sys_cfg__enable_stuf;                // Enable stuf

@@ -12,12 +12,13 @@ module fpga_template_top
     //---UART----------
     input   uart_rx,    // Pin 18 - RX from USB/FTDI internal
     output  uart_tx,    // Pin 17 - TX to USB/FTDI internal 
-    output  uart_tx_mon, 
+    output  uart_tx_mon,
     output  uart_rx_mon,
+    //---UART State Monitors---
     output  [1:0] rx_state_mon,
-    output  [3:0] proto_state_mon, 
-    output  [1:0] tx_state_mon, 
-    
+    output  [3:0] proto_state_mon,
+    output  [1:0] tx_state_mon,
+
     //---PWM-----------
     output pwm_out,
     //---Debug---------
@@ -109,13 +110,13 @@ uart_if uart_inst (
     .write_en           (uart_write_en),
     .streamSt_mon       (uart_streamSt_mon),
     // Debug interface
-    .debug_send         (1'b0), //0debug_uart_send),
+    .debug_send         (debug_uart_send),
     .debug_data         (debug_uart_data),
     .debug_out          (uart_debug_out),
     .debug_rx_data_valid (debug_rx_data_valid),
-    .rx_state_mon       (rx_state_mon),
-    .proto_state_mon    (proto_state_mon),
-    .tx_state_mon       (tx_state_mon) 
+    .rx_state_mon       (),
+    .proto_state_mon    (),
+    .tx_state_mon       () 
 );
 
 //--------------------------------------------------------------------------------------------------------

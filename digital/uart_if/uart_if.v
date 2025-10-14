@@ -42,7 +42,7 @@ reg [15:0] rx_clk_divider;
 reg [3:0] rx_bit_count;
 reg [7:0] rx_data_reg /* synthesis keep */;
 reg rx_data_valid /* synthesis keep */;
-reg [1:0] rx_state;
+(* fsm_encoding = "none" *) reg [1:0] rx_state;
 reg [7:0] rx_shift_reg /* synthesis keep */;
 
 // UART RX synchronizer (critical for async signals)
@@ -55,12 +55,12 @@ reg [3:0] tx_bit_count;
 reg [7:0] tx_data_reg;
 reg tx_start;
 reg tx_busy;
-reg [1:0] tx_state;
+(* fsm_encoding = "none" *) reg [1:0] tx_state;
 reg [7:0] tx_shift_reg;
 reg tx_reg;
 
 // Protocol state machine
-reg [3:0] proto_state /* synthesis keep */;
+(* fsm_encoding = "none" *) reg [3:0] proto_state;
 reg [7:0] cmd_reg;
 reg [7:0] addr_reg;
 reg [7:0] data_reg;
@@ -74,6 +74,7 @@ reg [7:0] tx_queue_write_ptr;
 reg [7:0] tx_queue_read_ptr;
 reg tx_queue_empty;
 reg block_read_active;
+
 
 // State definitions
 localparam RX_IDLE = 2'b00;
@@ -90,6 +91,7 @@ localparam PROTO_IDLE = 4'b0000;
 localparam PROTO_ADDR = 4'b0001;
 localparam PROTO_DATA = 4'b0010;
 localparam PROTO_RESPOND = 4'b0011;
+localparam PROTO_READ_WAIT = 4'b1001; // New state for single read wait
 localparam PROTO_BLOCK_LENGTH = 4'b0100;
 localparam PROTO_BLOCK_WRITE = 4'b0101;
 localparam PROTO_BLOCK_READ_START = 4'b0110;
@@ -319,7 +321,7 @@ always @(posedge clk) begin
                             proto_state <= PROTO_DATA;
                         end
                         8'h52, 8'h72: begin  // Single read
-                            proto_state <= PROTO_RESPOND;
+                            proto_state <= PROTO_READ_WAIT; // Go to new wait state
                             reg_enable <= 1;
                         end
                         8'h42, 8'h62: begin  // Block operations
@@ -403,18 +405,24 @@ always @(posedge clk) begin
                         proto_state <= PROTO_BLOCK_READ_START;
                     end
                 end
+
+                PROTO_READ_WAIT: begin
+                    // Wait one cycle for register data
+                    proto_state <= PROTO_RESPOND;
+                end
+
                 // For all other states, just wait.
                 default: ;
             endcase
         end
     end
 end
-assign debug_out = rx_data_reg | rx_shift_reg | {7'b0, rx_data_valid}; 
+assign debug_out = rx_data_reg | rx_shift_reg | {7'b0, rx_data_valid};
 assign rx_state_mon     = rx_state[1:0];
 assign proto_state_mon  = proto_state[1:0];
- 
+assign tx_state_mon     = tx_state[1:0];
 assign debug_rx_state = rx_state;
 assign debug_start_detected = (rx_state == RX_IDLE && !uart_rx_synced);
-assign debug_rx_data_valid  = rx_data_valid ; 
-assign tx_state_mon     = tx_state[1:0];
+assign debug_rx_data_valid  = rx_data_valid ;
+
 endmodule

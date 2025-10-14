@@ -1,0 +1,63 @@
+Converting systemverilog /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv : 
+Converting systemverilog /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv : 
+mkdir -p /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template
+echo "#Yosys build script" > /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/yosys.cmd
+echo "verilog_defaults -add -I /home/jakobsen/work/asic/workspace/fpga_template/digital" >> /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/yosys.cmd
+echo "read_verilog /home/jakobsen/work/asic/workspace/fpga_template/digital/pwm/pwm.v /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/i2c_if.v /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/i2cSlave_define.v /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/serialInterface.v /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/timescale.v /home/jakobsen/work/asic/workspace/fpga_template/digital/uart_if/uart_if.v /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv.conv.v /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv.conv.v" >> /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/yosys.cmd
+echo "synth_gowin -top fpga_template_top -nofsm -json /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/fpga_template.json" >> /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/yosys.cmd
+yosys -s /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/yosys.cmd
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2024  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.39+124 (git sha1 d73f71e81, clang++ 14.0.0-1ubuntu1.1 -fPIC -Os)
+
+-- Executing script file `/home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/yosys.cmd' --
+
+1. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/pwm/pwm.v
+Parsing Verilog input from `/home/jakobsen/work/asic/workspace/fpga_template/digital/pwm/pwm.v' to AST representation.
+Generating RTLIL representation for module `\pwm'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/i2c_if.v
+Parsing Verilog input from `/home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/i2c_if.v' to AST representation.
+Warning: Yosys has only limited support for tri-state logic at the moment. (/home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/i2c_if.v:81)
+Generating RTLIL representation for module `\i2c_if'.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/i2cSlave_define.v
+Parsing Verilog input from `/home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/i2cSlave_define.v' to AST representation.
+Successfully finished Verilog frontend.
+
+4. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/serialInterface.v
+Parsing Verilog input from `/home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/serialInterface.v' to AST representation.
+Warning: Encountered `parallel_case' comment! Such legacy hot comments are supported by Yosys, but are not part of any formal language specification. Using the Verilog `parallel_case' attribute or the SystemVerilog `unique' or `priority' keywords is recommended!
+Warning: Encountered `full_case' comment! Such legacy hot comments are supported by Yosys, but are not part of any formal language specification. Using the Verilog `full_case' attribute or the SystemVerilog `unique' or `unique0' keywords is recommended!
+Generating RTLIL representation for module `\serialInterface'.
+Note: Assuming pure combinatorial block at /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/serialInterface.v:118.1-326.4 in
+compliance with IEC 62142(E):2005 / IEEE Std. 1364.1(E):2002. Recommending
+use of @* instead of @(...) for better match of synthesis and simulation.
+Successfully finished Verilog frontend.
+
+5. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/timescale.v
+Parsing Verilog input from `/home/jakobsen/work/asic/workspace/fpga_template/digital/i2c_if/timescale.v' to AST representation.
+Successfully finished Verilog frontend.
+
+6. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/uart_if/uart_if.v
+Parsing Verilog input from `/home/jakobsen/work/asic/workspace/fpga_template/digital/uart_if/uart_if.v' to AST representation.
+Generating RTLIL representation for module `\uart_if'.
+Warning: reg '\tx_queue_empty' is assigned in a continuous assignment at /home/jakobsen/work/asic/workspace/fpga_template/digital/uart_if/uart_if.v:110.8-110.88.
+Successfully finished Verilog frontend.
+
+7. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv.conv.v
+Parsing Verilog input from `/home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv.conv.v' to AST representation.
+Generating RTLIL representation for module `\rb_fpga_template'.
+Successfully finished Verilog frontend.
+
+8. Executing Verilog-2005 frontend: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv.conv.v
+ERROR: Command syntax error: Unknown option or option in arguments.
+> synth_gowin -top fpga_template_top -nofsm -json /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/fpga_template.json
+>                                    ^
+make: *** [makefile:60: /home/jakobsen/work/asic/workspace/fpga_template/obj/fpga_template/fpga_template.json] Error 1
