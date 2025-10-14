@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an FPGA template project designed for mid-sized FPGA designs, specifically targeting the Tang Nano 9K development board. The project uses SystemVerilog with Verilog components and provides a complete build flow from source to bitstream.
+This is an FPGA template project designed for mid-sized FPGA designs, targeting Tang Nano development boards (9K and 20K). The project uses SystemVerilog with Verilog components and provides a complete build flow from source to bitstream.
 
 ## Architecture
 
@@ -40,11 +40,13 @@ cd digital/fpga_template
 ```
 
 ### Core Build Commands
-- `make build` - Build complete bitstream (checks if rebuild needed)
+- `make build` - Build complete bitstream for Tang Nano 9K (default)
+- `make BOARD=tangnano20k build` - Build for Tang Nano 20K
 - `make load` - Load bitstream to FPGA via USB (temporary, lost on power cycle)
 - `make flash` - Flash bitstream to EPROM (persistent across power cycles)
 - `make clean` - Remove all build artifacts
 - `make conv2v` - Convert SystemVerilog files to Verilog using sv2v
+- `make info` or `make help` - Show build configuration and available commands
 
 ### Register Bank Generation
 ```bash
@@ -69,9 +71,9 @@ make regs  # Generates register bank from register_bank.go
 - `obj/` - Build output directory (created automatically)
 
 ### Build Configuration
-- Board: Tang Nano 9K (`tangnano9k`)
-- FPGA: Gowin GW1NR-LV9QN88PC6/I5
-- Constraint file: `digital/fpga_template/tangnano9k.cst`
+Default board: Tang Nano 9K (`tangnano9k`)
+- **Tang Nano 9K**: Family GW1N-9C, Device GW1NR-LV9QN88PC6/I5, Constraint file `tangnano9k.cst`
+- **Tang Nano 20K**: Family GW2A-18C, Device GW2AR-LV18QN88C8/I7, Constraint file `tangnano20k.cst`
 
 ### SystemVerilog Conversion
 - Original `.sv` files are converted to `.sv.conv.v` using sv2v tool
@@ -111,6 +113,16 @@ Current register sections:
 
 The `python_tools/` directory contains Python scripts for communicating with the FPGA via UART:
 
+### Command Line Interface
+- **`fcom`** - Command-line tool for FPGA register access (similar to scom)
+  - **Auto-detects Tang Nano board** - No need to specify port manually
+  - Read/write registers: `./fcom r 0x01`, `./fcom w 0x02 0x2A`
+  - Named register access: `./fcom r pwm_duty`, `./fcom w debug_led 0x15`
+  - Special commands: `./fcom led 0x3F`, `./fcom pwm 75.0`, `./fcom test`
+  - Output formats: `-oh` (hex), `-od` (decimal), `-ob` (binary)
+  - Manual port: `-p /dev/ttyUSB2` (overrides auto-detection)
+  - See `python_tools/README.md` for full usage
+
 ### Main Interface Class
 - **`fpga_uart_interface.py`** - Complete UART interface class with protocol implementation
   - Single read/write operations
@@ -124,7 +136,16 @@ The `python_tools/` directory contains Python scripts for communicating with the
 - **`test_simple_uart.py`** - Basic protocol testing
 
 ### Usage Examples
+```bash
+# Command line - quick register access
+cd python_tools
+./fcom pwm 75.0           # Set PWM to 75%
+./fcom led 0x2A           # Set LED pattern
+./fcom r pwm_duty         # Read PWM duty register
+```
+
 ```python
+# Python API - programmatic access
 from python_tools.fpga_uart_interface import FPGAUartInterface
 
 fpga = FPGAUartInterface(port='/dev/ttyUSB1')
@@ -136,10 +157,15 @@ if fpga.connect():
 ```
 
 ### UART Connection Details
-- **Hardware**: Tang Nano 9K onboard USB-to-serial converter
-- **Port**: `/dev/ttyUSB0` (UART interface), `/dev/ttyUSB1` (JTAG programming)
+- **Hardware**: Tang Nano onboard USB-to-serial converter (FTDI FT2232H from SIPEED)
+- **Port**: Auto-detected by `fcom` tool (typically `/dev/ttyUSB2` for UART, `/dev/ttyUSB1` for JTAG)
+- **Detection**: Identifies SIPEED device (VID:PID 0403:6010) and selects UART interface (interface 01)
 - **Settings**: 115200 baud, 8N1
-- **Protocol**: Custom register access protocol (see python_tools/README.md)
+- **Protocol**: Custom register access protocol
+  - Single Write: `'W' + address_byte + data_byte`
+  - Single Read: `'R' + address_byte → responds with data_byte`
+  - Block Write: `'B' + start_address + length + data0 + data1 + ...`
+  - Block Read: `'b' + start_address + length → responds with data0 + data1 + ...`
 
 ## Dependencies
 

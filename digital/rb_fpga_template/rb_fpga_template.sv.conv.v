@@ -150,82 +150,85 @@ module rb_fpga_template (
 		if (resetb == 0)
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:106:5
 			data_read_out <= 8'b00000000;
-		else
+		else begin
 			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:109:5
+			data_read_out <= 8'b00000000;
+			// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:110:5
 			case (address)
 				0: begin
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:111:15
-					data_read_out[0:0] <= reg__sys_cfg__enable_stuf;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:112:15
-					data_read_out[1:1] <= reg__sys_cfg__enable_other;
+					data_read_out[0:0] <= reg__sys_cfg__enable_stuf;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:113:15
+					data_read_out[1:1] <= reg__sys_cfg__enable_other;
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:114:15
 					data_read_out[2:2] <= sys_cfg[40];
 				end
 				1:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:115:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:116:15
 					data_read_out[7:0] <= reg__sys_cfg__pwm_duty;
 				2:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:117:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:118:15
 					data_read_out[7:0] <= reg__sys_cfg__debug_led;
 				4:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:119:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:120:15
 					data_read_out[7:0] <= reg__sys_cfg__debug_data0;
 				5:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:121:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:122:15
 					data_read_out[7:0] <= reg__sys_cfg__debug_data1;
 				6:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:123:15
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:124:15
 					data_read_out[7:0] <= reg__sys_cfg__debug_data2;
 				64: begin
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:126:15
-					data_read_out[0:0] <= reg__dsp_cfg__bypass_enable;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:127:15
-					data_read_out[1:1] <= reg__dsp_cfg__dc_filter_enable;
+					data_read_out[0:0] <= reg__dsp_cfg__bypass_enable;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:128:15
-					data_read_out[2:2] <= reg__dsp_cfg__bp_filter_enable;
+					data_read_out[1:1] <= reg__dsp_cfg__dc_filter_enable;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:129:15
-					data_read_out[3:3] <= reg__dsp_cfg__dec_filter_enable;
+					data_read_out[2:2] <= reg__dsp_cfg__bp_filter_enable;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:130:15
-					data_read_out[4:4] <= reg__dsp_cfg__pli_filter_enable;
+					data_read_out[3:3] <= reg__dsp_cfg__dec_filter_enable;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:131:15
-					data_read_out[5:5] <= reg__dsp_cfg__placeholder1;
+					data_read_out[4:4] <= reg__dsp_cfg__pli_filter_enable;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:132:15
-					data_read_out[6:6] <= reg__dsp_cfg__placeholder2;
+					data_read_out[5:5] <= reg__dsp_cfg__placeholder1;
 					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:133:15
+					data_read_out[6:6] <= reg__dsp_cfg__placeholder2;
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:134:15
 					data_read_out[7:7] <= reg__dsp_cfg__placeholder3;
 				end
 				default:
-					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:135:17
+					// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:136:17
 					data_read_out <= 8'b00000000;
 			endcase
-	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:140:1
-	assign sys_cfg[42] = reg__sys_cfg__enable_stuf;
+		end
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:141:1
-	assign sys_cfg[41] = reg__sys_cfg__enable_other;
+	assign sys_cfg[42] = reg__sys_cfg__enable_stuf;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:142:1
-	assign sys_cfg[39-:8] = reg__sys_cfg__pwm_duty;
+	assign sys_cfg[41] = reg__sys_cfg__enable_other;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:143:1
-	assign sys_cfg[31-:8] = reg__sys_cfg__debug_led;
+	assign sys_cfg[39-:8] = reg__sys_cfg__pwm_duty;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:144:1
-	assign sys_cfg[23-:8] = reg__sys_cfg__debug_data0;
+	assign sys_cfg[31-:8] = reg__sys_cfg__debug_led;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:145:1
-	assign sys_cfg[15-:8] = reg__sys_cfg__debug_data1;
+	assign sys_cfg[23-:8] = reg__sys_cfg__debug_data0;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:146:1
-	assign sys_cfg[7-:8] = reg__sys_cfg__debug_data2;
+	assign sys_cfg[15-:8] = reg__sys_cfg__debug_data1;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:147:1
-	assign dsp_cfg[7] = reg__dsp_cfg__bypass_enable;
+	assign sys_cfg[7-:8] = reg__sys_cfg__debug_data2;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:148:1
-	assign dsp_cfg[6] = reg__dsp_cfg__dc_filter_enable;
+	assign dsp_cfg[7] = reg__dsp_cfg__bypass_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:149:1
-	assign dsp_cfg[5] = reg__dsp_cfg__bp_filter_enable;
+	assign dsp_cfg[6] = reg__dsp_cfg__dc_filter_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:150:1
-	assign dsp_cfg[4] = reg__dsp_cfg__dec_filter_enable;
+	assign dsp_cfg[5] = reg__dsp_cfg__bp_filter_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:151:1
-	assign dsp_cfg[3] = reg__dsp_cfg__pli_filter_enable;
+	assign dsp_cfg[4] = reg__dsp_cfg__dec_filter_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:152:1
-	assign dsp_cfg[2] = reg__dsp_cfg__placeholder1;
+	assign dsp_cfg[3] = reg__dsp_cfg__pli_filter_enable;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:153:1
-	assign dsp_cfg[1] = reg__dsp_cfg__placeholder2;
+	assign dsp_cfg[2] = reg__dsp_cfg__placeholder1;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:154:1
+	assign dsp_cfg[1] = reg__dsp_cfg__placeholder2;
+	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/rb_fpga_template/rb_fpga_template.sv:155:1
 	assign dsp_cfg[0] = reg__dsp_cfg__placeholder3;
 endmodule

@@ -20,7 +20,7 @@ Special functions:
                  info - Show register map information
 
 Options:
-                 -p <port> : Specify UART port (default: /dev/ttyUSB1)
+                 -p <port> : Specify UART port (default: auto-detect Tang Nano)
                  -b <baud> : Specify baud rate (default: 115200)
                  -t <timeout> : Specify timeout in seconds (default: 2.0)
                  -o[d|b|h] : Specify output format (default hex)
@@ -49,7 +49,90 @@ import time
 import os
 import glob
 import json
+import subprocess
+import re
 from fpga_uart_interface import FPGAUartInterface
+
+def find_tang_nano_port():
+    """
+    Automatically find the Tang Nano board's UART port.
+
+    Tang Nano boards use FTDI FT2232H chips from SIPEED with two interfaces:
+    - Interface 0: JTAG programming interface
+    - Interface 1: UART communication interface (this is what we want)
+
+    Returns:
+        str: Path to the UART port (e.g., '/dev/ttyUSB2'), or None if not found
+    """
+    try:
+        # Get list of USB serial ports
+        if not os.path.exists('/dev'):
+            return None
+
+        usb_ports = glob.glob('/dev/ttyUSB*')
+        if not usb_ports:
+            return None
+
+        # Look for SIPEED/Tang Nano devices with FTDI chip (vendor ID 0403:6010)
+        # We want interface 01 (UART), not interface 00 (JTAG)
+        for port in usb_ports:
+            try:
+                # Get device information using udevadm
+                result = subprocess.run(
+                    ['udevadm', 'info', '--name=' + port],
+                    capture_output=True,
+                    text=True,
+                    timeout=2
+                )
+
+                if result.returncode != 0:
+                    continue
+
+                info = result.stdout
+
+                # Check for FTDI chip (vendor 0403, model 6010) and SIPEED vendor
+                is_ftdi = 'ID_VENDOR_ID=0403' in info and 'ID_MODEL_ID=6010' in info
+                is_sipeed = 'ID_VENDOR=SIPEED' in info or 'ID_VENDOR_ENC=SIPEED' in info
+
+                # Check if this is the UART interface (01) not JTAG (00)
+                is_uart_interface = 'ID_USB_INTERFACE_NUM=01' in info
+
+                if is_ftdi and is_sipeed and is_uart_interface:
+                    return port
+
+            except (subprocess.TimeoutExpired, FileNotFoundError, PermissionError):
+                continue
+
+        # Fallback: if we found SIPEED device but couldn't determine interface,
+        # try to use the higher numbered port (interface 01 usually comes after 00)
+        sipeed_ports = []
+        for port in usb_ports:
+            try:
+                result = subprocess.run(
+                    ['udevadm', 'info', '--name=' + port],
+                    capture_output=True,
+                    text=True,
+                    timeout=2
+                )
+
+                if result.returncode == 0:
+                    info = result.stdout
+                    if 'ID_VENDOR=SIPEED' in info or 'ID_VENDOR_ENC=SIPEED' in info:
+                        sipeed_ports.append(port)
+
+            except (subprocess.TimeoutExpired, FileNotFoundError, PermissionError):
+                continue
+
+        # If we found SIPEED ports, return the highest numbered one (likely UART interface)
+        if sipeed_ports:
+            sipeed_ports.sort()
+            return sipeed_ports[-1]
+
+    except Exception as e:
+        # Silently fail and return None - caller will handle fallback
+        pass
+
+    return None
 
 def load_register_map():
     """Load register map from .regfile_<project_name> or reg_file_<project_name> file."""
@@ -211,7 +294,6 @@ def cmd_read(fpga, args):
     if len(args) < 1:
         print("Error: Read command requires an address")
         return False
-    time.sleep(0.10)
     try:
         address = parse_address(args[0])
         if not (0 <= address <= 255):
@@ -499,7 +581,7 @@ def main():
         return 1
 
     # Default options
-    port = '/dev/ttyUSB1'
+    port = None  # Will auto-detect if not specified
     baudrate = 115200
     timeout = 2.0
     output_format = 'h'  # hex
@@ -573,6 +655,19 @@ def main():
     command = filtered_args[0].lower()
     cmd_args = filtered_args[1:]
 
+    # Auto-detect Tang Nano port if not specified
+    if port is None:
+        port = find_tang_nano_port()
+        if port is None:
+            print("Error: Could not auto-detect Tang Nano board.")
+            print("Available ports:")
+            for p in glob.glob('/dev/ttyUSB*'):
+                print(f"  {p}")
+            print("\nPlease specify port manually with -p option")
+            return 1
+        if verbose >= 1:
+            print(f"Auto-detected Tang Nano on {port}")
+
     # Create FPGA interface
     fpga = FPGAUartInterface(port=port, baudrate=baudrate, timeout=timeout, verbose=verbose > 0)
     fpga.output_format = output_format
@@ -581,6 +676,7 @@ def main():
     # Connect to FPGA
     if not fpga.connect():
         print(f"Error: Could not connect to FPGA on {port}")
+        print("Try specifying a different port with -p option")
         return 1
 
     try:

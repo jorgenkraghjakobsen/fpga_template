@@ -215,9 +215,25 @@ class FPGAUartInterface:
             self.serial.flush()
 
             # WORKAROUND: FPGA sends too much data, need to find the correct bytes
-            # Read more data than requested to handle FPGA buffer issue
-            max_response_size = 256
-            response = self.serial.read(max_response_size)
+            # Use a shorter timeout per byte and read with inter-byte timeout
+            # Read in chunks with small delays to handle FPGA buffer issues
+            response = b''
+            start_time = time.time()
+            # Scale timeout with length: 100ms base + 50ms per byte, max 1 second
+            max_wait = min(0.1 + (length * 0.05), 1.0)
+
+            # Read available data in small bursts
+            while len(response) < length and (time.time() - start_time) < max_wait:
+                if self.serial.in_waiting > 0:
+                    chunk = self.serial.read(self.serial.in_waiting)
+                    response += chunk
+                else:
+                    time.sleep(0.01)  # Small delay between checks
+
+            # If we still haven't got enough, try one more blocking read
+            if len(response) < length:
+                remaining = length - len(response)
+                response += self.serial.read(remaining)
 
             if len(response) < length:
                 print(f"Block read timeout: got {len(response)} of {length} bytes")

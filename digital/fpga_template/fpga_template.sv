@@ -22,7 +22,7 @@ module fpga_template_top
     //---PWM-----------
     output pwm_out,
     //---Debug---------
-    output  [5:0] debug_led_pin,
+    output  [5:0] debug_led,
     input   btn_s1_resetb,     // Button 1 input
     input   btn_s2            // Button 2 input
     );
@@ -32,7 +32,7 @@ assign uart_rx_mon = uart_rx;
 wire debug_rx_data_valid; 
 assign uart_tx_mon = uart_tx; 
 
-assign debug_led_pin = sys_cfg.debug_led;
+assign debug_led = sys_cfg.debug_led;
 
 //--------------------------------------------------------------------------------------------------------
 // Clock and reset   
@@ -191,7 +191,7 @@ localparam DEBUG_WAIT = 4'h3;
 // Debug sequence: "DBG:" followed by incrementing numbers 0x00 to 0x0F
 always @(posedge clk) begin
     if (!resetb) begin
-        //debug_led_pin <= 6'b111111;
+        //debug_led <= 6'b111111;
         debug_state <= DEBUG_IDLE;
         debug_counter <= 16'h0000;
         debug_byte <= 8'h00;
@@ -203,7 +203,7 @@ always @(posedge clk) begin
         case (debug_state)
             DEBUG_IDLE: begin
                 if (!btn_s2_edge) begin
-                    //debug_led_pin <= 6'b000000;
+                    //debug_led <= 6'b000000;
                     debug_state <= DEBUG_START;
                     debug_counter <= 16'h0000;
                     debug_active <= 1'b1;

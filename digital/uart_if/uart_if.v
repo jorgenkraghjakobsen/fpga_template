@@ -91,12 +91,16 @@ localparam PROTO_IDLE = 4'b0000;
 localparam PROTO_ADDR = 4'b0001;
 localparam PROTO_DATA = 4'b0010;
 localparam PROTO_RESPOND = 4'b0011;
-localparam PROTO_READ_WAIT = 4'b1001; // New state for single read wait
+localparam PROTO_READ_WAIT = 4'b1001; // First wait for address to stabilize
+localparam PROTO_READ_WAIT2 = 4'b1011; // Second wait for register bank read pipeline
+localparam PROTO_READ_WAIT3 = 4'b1101; // Third wait - data is now stable
 localparam PROTO_BLOCK_LENGTH = 4'b0100;
 localparam PROTO_BLOCK_WRITE = 4'b0101;
 localparam PROTO_BLOCK_READ_START = 4'b0110;
 localparam PROTO_BLOCK_READ_WAIT = 4'b0111;
+localparam PROTO_BLOCK_READ_WAIT2 = 4'b1010;  // Second wait for register bank pipeline
 localparam PROTO_BLOCK_READ_SEND = 4'b1000;
+localparam PROTO_BLOCK_READ_DRAIN = 4'b1100;  // Wait for TX queue to drain
 
 
 assign uart_tx = tx_reg;
@@ -107,7 +111,8 @@ assign reg_en = reg_enable;
 assign streamSt_mon = {current_addr[0], write_enable};
 
 // TX queue management
-assign tx_queue_empty = (tx_queue_write_ptr == tx_queue_read_ptr) && !block_read_active;
+// Queue is empty when read pointer equals write pointer
+assign tx_queue_empty = (tx_queue_write_ptr == tx_queue_read_ptr);
 
 // Synchronized UART RX
 assign uart_rx_synced = uart_rx_sync2;
@@ -295,22 +300,26 @@ always @(posedge clk) begin
         if (rx_data_valid) begin
             case (proto_state)
                 PROTO_IDLE: begin
-                    cmd_reg <= rx_data_reg;
-                    case (rx_data_reg)
-                        8'h57, 8'h77: begin  // 'W' or 'w' - Single write
-                            proto_state <= PROTO_ADDR;
-                        end
-                        8'h52, 8'h72: begin  // 'R' or 'r' - Single read
-                            proto_state <= PROTO_ADDR;
-                        end
-                        8'h42: begin  // 'B' - Block write
-                            proto_state <= PROTO_ADDR;
-                        end
-                        8'h62: begin  // 'b' - Block read
-                            proto_state <= PROTO_ADDR;
-                        end
-                        default: proto_state <= PROTO_IDLE;
-                    endcase
+                    // Only accept new commands if TX queue is empty to avoid address conflicts
+                    if (tx_queue_empty) begin
+                        cmd_reg <= rx_data_reg;
+                        case (rx_data_reg)
+                            8'h57, 8'h77: begin  // 'W' or 'w' - Single write
+                                proto_state <= PROTO_ADDR;
+                            end
+                            8'h52, 8'h72: begin  // 'R' or 'r' - Single read
+                                proto_state <= PROTO_ADDR;
+                            end
+                            8'h42: begin  // 'B' - Block write
+                                proto_state <= PROTO_ADDR;
+                            end
+                            8'h62: begin  // 'b' - Block read
+                                proto_state <= PROTO_ADDR;
+                            end
+                            default: proto_state <= PROTO_IDLE;
+                        endcase
+                    end
+                    // If queue not empty, stay in IDLE and ignore command
                 end
 
                 PROTO_ADDR: begin
@@ -321,8 +330,8 @@ always @(posedge clk) begin
                             proto_state <= PROTO_DATA;
                         end
                         8'h52, 8'h72: begin  // Single read
-                            proto_state <= PROTO_READ_WAIT; // Go to new wait state
-                            reg_enable <= 1;
+                            proto_state <= PROTO_READ_WAIT;
+                            // Don't reset pointers for single read - let it use current position
                         end
                         8'h42, 8'h62: begin  // Block operations
                             proto_state <= PROTO_BLOCK_LENGTH;
@@ -340,7 +349,8 @@ always @(posedge clk) begin
                         end
                         8'h62: begin  // Block read
                             proto_state <= PROTO_BLOCK_READ_START;
-                            tx_queue_write_ptr <= 0;
+                            // Don't reset write_ptr - let it continue from current position
+                            // The circular queue will handle wrapping naturally
                             block_read_active <= 1;
                         end
                         default: proto_state <= PROTO_IDLE;
@@ -372,43 +382,70 @@ always @(posedge clk) begin
         end 
         else begin // not rx_data_valid
             case (proto_state)
-                PROTO_RESPOND: begin
-                    // Single read response
-                    if (!tx_busy) begin
-                        tx_queue[tx_queue_write_ptr] <= data_read_from_reg;
-                        tx_queue_write_ptr <= tx_queue_write_ptr + 1;
-                        proto_state <= PROTO_IDLE;
-                    end
-                end
+                // PROTO_RESPOND no longer needed - we queue data in READ_WAIT2
 
                 PROTO_BLOCK_READ_START: begin
+                    // Set address and wait for it to stabilize
                     current_addr <= addr_reg + block_counter;
-                    reg_enable <= 1;
                     proto_state <= PROTO_BLOCK_READ_WAIT;
                 end
 
                 PROTO_BLOCK_READ_WAIT: begin
-                    // Wait one cycle for register data
+                    // Address is now stable, assert reg_enable
+                    reg_enable <= 1;
+                    proto_state <= PROTO_BLOCK_READ_WAIT2;
+                end
+
+                PROTO_BLOCK_READ_WAIT2: begin
+                    // Address has been stable for one cycle, reg bank output should be valid
+                    // Queue the data immediately (same as single read timing)
+                    reg_enable <= 1;
+                    tx_queue[tx_queue_write_ptr] <= data_read_from_reg;
+                    tx_queue_write_ptr <= tx_queue_write_ptr + 1;
                     proto_state <= PROTO_BLOCK_READ_SEND;
                 end
 
                 PROTO_BLOCK_READ_SEND: begin
-                    // Queue the read data
-                    tx_queue[tx_queue_write_ptr] <= data_read_from_reg;
-                    tx_queue_write_ptr <= tx_queue_write_ptr + 1;
+                    // Data already queued in WAIT2, now check if done
                     block_counter <= block_counter + 1;
 
-                    if (block_counter == length_reg - 1) begin
+                    // Check if we've read all bytes
+                    // After incrementing, block_counter will be equal to length when done
+                    if (block_counter + 1 >= length_reg) begin
                         block_read_active <= 0;
-                        proto_state <= PROTO_IDLE;
+                        proto_state <= PROTO_BLOCK_READ_DRAIN;  // Wait for queue to drain
                     end else begin
+                        // Move to START state which will update the address for next byte
                         proto_state <= PROTO_BLOCK_READ_START;
                     end
                 end
 
+                PROTO_BLOCK_READ_DRAIN: begin
+                    // Wait until all data has been transmitted
+                    if (tx_queue_empty) begin
+                        proto_state <= PROTO_IDLE;
+                    end
+                    // Otherwise stay in this state
+                end
+
                 PROTO_READ_WAIT: begin
-                    // Wait one cycle for register data
-                    proto_state <= PROTO_RESPOND;
+                    // Wait for address to settle and register bank to respond
+                    reg_enable <= 1;
+                    proto_state <= PROTO_READ_WAIT2;
+                end
+
+                PROTO_READ_WAIT2: begin
+                    // Address has been stable for one cycle, reg bank output should be valid
+                    // Queue the data immediately
+                    reg_enable <= 1;
+                    tx_queue[tx_queue_write_ptr] <= data_read_from_reg;
+                    tx_queue_write_ptr <= tx_queue_write_ptr + 1;
+                    proto_state <= PROTO_BLOCK_READ_DRAIN;
+                end
+
+                PROTO_READ_WAIT3: begin
+                    // Removed - using only 2 wait states now
+                    proto_state <= PROTO_IDLE;
                 end
 
                 // For all other states, just wait.

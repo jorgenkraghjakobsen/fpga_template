@@ -16,11 +16,16 @@ This directory contains Python tools for communicating with the FPGA via UART in
 ## Usage
 
 ### Command Line Interface (fcom)
-The `fcom` tool provides a command-line interface similar to `scom`:
+The `fcom` tool provides a command-line interface similar to `scom` with **automatic Tang Nano board detection**:
 
 ```bash
 # Show help
 ./fcom -h
+
+# Auto-detection (no -p flag needed!)
+./fcom led 0x3F                 # Auto-detects Tang Nano and sets LED pattern
+./fcom pwm 75.0                 # Auto-detects and sets PWM to 75% duty cycle
+./fcom test                     # Test UART connection (auto-detected port)
 
 # Read registers
 ./fcom r 0x01                    # Read PWM duty register
@@ -31,26 +36,28 @@ The `fcom` tool provides a command-line interface similar to `scom`:
 ./fcom w debug_led 0x15         # Write using symbolic name
 
 # Special commands
-./fcom led 0x3F                 # Set LED pattern (all LEDs on)
-./fcom pwm 75.0                 # Set PWM to 75% duty cycle
-./fcom test                     # Test UART connection
-./fcom info                     # Show register map
+./fcom info                     # Show register map and detected port
 
 # Dump registers
 ./fcom d 0x00 0x05             # Dump registers 0x00 to 0x05
 
 # Block operations
-./fcom b 0x10 0xAA 0xBB 0xCC   # Block write
-./fcom br 0x00 3               # Block read 3 bytes
+./fcom w 0x10 0xAA 0xBB 0xCC   # Block write
+./fcom r 0x00 3                # Block read 3 bytes
 
 # Output formats
 ./fcom r 0x01 -od              # Decimal output
 ./fcom r 0x01 -ob              # Binary output
 ./fcom r 0x01 -oh              # Hex output (default)
 
-# Different ports
-./fcom r 0x01 -p /dev/ttyUSB0  # Use different port
+# Manual port override (if auto-detection fails)
+./fcom r 0x01 -p /dev/ttyUSB2  # Use specific port
 ```
+
+**Auto-detection works by:**
+- Scanning for SIPEED devices with FTDI chip (VID:PID 0403:6010)
+- Selecting UART interface (interface 01) not JTAG (interface 00)
+- Automatically finds the correct port even if port numbers change
 
 ### Python API Usage
 ```python
@@ -99,9 +106,12 @@ The FPGA implements a simple UART protocol:
 
 ## Hardware Connection
 
-- **Port**: `/dev/ttyUSB0` (UART interface on Tang Nano 9K)
+- **Port**: Auto-detected by `fcom` (typically `/dev/ttyUSB2` for UART)
+  - Tang Nano has two interfaces: `/dev/ttyUSB1` (JTAG) and `/dev/ttyUSB2` (UART)
+  - The `fcom` tool automatically selects the UART interface
 - **Baud Rate**: 115200
 - **Data**: 8 bits, No parity, 1 stop bit
+- **USB Device**: FTDI FT2232H (SIPEED, VID:PID 0403:6010)
 
 ## Register Map
 

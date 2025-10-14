@@ -13,7 +13,7 @@ module fpga_template_top (
 	proto_state_mon,
 	tx_state_mon,
 	pwm_out,
-	debug_led_pin,
+	debug_led,
 	btn_s1_resetb,
 	btn_s2
 );
@@ -40,7 +40,7 @@ module fpga_template_top (
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:23:5
 	output wire pwm_out;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:25:5
-	output wire [5:0] debug_led_pin;
+	output wire [5:0] debug_led;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:26:5
 	input btn_s1_resetb;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:27:5
@@ -54,7 +54,7 @@ module fpga_template_top (
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:35:1
 	// removed localparam type fpga_template_pkg_rb_sys_cfg_wire_t
 	wire [42:0] sys_cfg;
-	assign debug_led_pin = sys_cfg[31-:8];
+	assign debug_led = sys_cfg[31-:8];
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:41:1
 	wire resetb;
 	// Trace: /home/jakobsen/work/asic/workspace/fpga_template/digital/fpga_template/fpga_template.sv:42:1

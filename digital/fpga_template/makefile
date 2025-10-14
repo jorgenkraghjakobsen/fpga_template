@@ -1,6 +1,19 @@
-BOARD 		= tangnano9k
-FAMILY		= GW1N-9C
-DEVICE		= GW1NR-LV9QN88PC6/I5
+# Board selection: tangnano9k or tangnano20k
+# Override with: make BOARD=tangnano20k build
+BOARD 		?= tangnano9k
+
+# Board-specific parameters
+ifeq ($(BOARD),tangnano20k)
+    FAMILY		= GW2A-18C
+    DEVICE		= GW2AR-LV18QN88C8/I7
+    CST_FILE	= tangnano20k.cst
+else ifeq ($(BOARD),tangnano9k)
+    FAMILY		= GW1N-9C
+    DEVICE		= GW1NR-LV9QN88PC6/I5
+    CST_FILE	= tangnano9k.cst
+else
+    $(error Unknown BOARD: $(BOARD). Valid options: tangnano9k, tangnano20k)
+endif
 
 PROJ		= fpga_template
 
@@ -60,9 +73,9 @@ $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ)
 	yosys -s $(OBJ)/yosys.cmd
 
 # Place and Route
-$(OBJ)/$(PROJ)_pnr.json: $(OBJ)/$(PROJ).json $(WS)/digital/$(PROJ)/tangnano9k.cst
+$(OBJ)/$(PROJ)_pnr.json: $(OBJ)/$(PROJ).json $(WS)/digital/$(PROJ)/$(CST_FILE)
 	nextpnr-himbaechel --freq 27 --json $(OBJ)/$(PROJ).json --write $(OBJ)/$(PROJ)_pnr.json \
-	--device ${DEVICE} --vopt family=${FAMILY} --vopt cst=$(WS)/digital/$(PROJ)/tangnano9k.cst
+	--device ${DEVICE} --vopt family=${FAMILY} --vopt cst=$(WS)/digital/$(PROJ)/$(CST_FILE)
 
 
 $(OBJ)/$(PROJ).fs: $(OBJ)/$(PROJ)_pnr.json
@@ -82,3 +95,28 @@ load:
 
 clean:
 	rm -rf $(OBJ)
+
+# Show build information and help
+info:
+	@echo "===== Build Configuration ====="
+	@echo "BOARD:   $(BOARD)"
+	@echo "FAMILY:  $(FAMILY)"
+	@echo "DEVICE:  $(DEVICE)"
+	@echo "CST:     $(CST_FILE)"
+	@echo "PROJECT: $(PROJ)"
+	@echo ""
+	@echo "===== Usage ====="
+	@echo "Build for Tang Nano 9K (default):"
+	@echo "  make build"
+	@echo "  make BOARD=tangnano9k build"
+	@echo ""
+	@echo "Build for Tang Nano 20K:"
+	@echo "  make BOARD=tangnano20k build"
+	@echo ""
+	@echo "Other commands:"
+	@echo "  make load              - Load bitstream to FPGA (temporary)"
+	@echo "  make flash             - Flash bitstream to EPROM (persistent)"
+	@echo "  make clean             - Remove all build artifacts"
+	@echo "  make info              - Show this information"
+
+help: info
