@@ -7,10 +7,12 @@ ifeq ($(BOARD),tangnano20k)
     FAMILY		= GW2A-18C
     DEVICE		= GW2AR-LV18QN88C8/I7
     CST_FILE	= tangnano20k.cst
+    BOARD_DEFINE	= TANGNANO20K
 else ifeq ($(BOARD),tangnano9k)
     FAMILY		= GW1N-9C
     DEVICE		= GW1NR-LV9QN88PC6/I5
     CST_FILE	= tangnano9k.cst
+    BOARD_DEFINE	= TANGNANO9K
 else
     $(error Unknown BOARD: $(BOARD). Valid options: tangnano9k, tangnano20k)
 endif
@@ -62,7 +64,7 @@ test:
 
 conv2v: $(SRC_SV)
 	$(foreach s,$(SRC_SV), \
-	  $(shell sv2v -v -I$(WS)/digital --siloed $(PKG) $(s) > $(s).conv.v) \
+	  $(shell sv2v -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) $(PKG) $(s) > $(s).conv.v) \
 	  $(info Converting systemverilog $(s) : ))
 
 $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 

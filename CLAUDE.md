@@ -40,8 +40,8 @@ cd digital/fpga_template
 ```
 
 ### Core Build Commands
-- `make build` - Build complete bitstream for Tang Nano 9K (default)
-- `make BOARD=tangnano20k build` - Build for Tang Nano 20K
+- `make build` - Build complete bitstream for Tang Nano 20K (default)
+- `make BOARD=tangnano9k build` - Build for Tang Nano 9K
 - `make load` - Load bitstream to FPGA via USB (temporary, lost on power cycle)
 - `make flash` - Flash bitstream to EPROM (persistent across power cycles)
 - `make clean` - Remove all build artifacts
@@ -71,9 +71,13 @@ make regs  # Generates register bank from register_bank.go
 - `obj/` - Build output directory (created automatically)
 
 ### Build Configuration
-Default board: Tang Nano 9K (`tangnano9k`)
-- **Tang Nano 9K**: Family GW1N-9C, Device GW1NR-LV9QN88PC6/I5, Constraint file `tangnano9k.cst`
+Default board: Tang Nano 20K (`tangnano20k`)
 - **Tang Nano 20K**: Family GW2A-18C, Device GW2AR-LV18QN88C8/I7, Constraint file `tangnano20k.cst`
+  - Board define: `TANGNANO20K` (passed to sv2v and synthesis)
+  - Reset button S1 pulls **HIGH** when pressed (requires inversion to get active high resetb)
+- **Tang Nano 9K**: Family GW1N-9C, Device GW1NR-LV9QN88PC6/I5, Constraint file `tangnano9k.cst`
+  - Board define: `TANGNANO9K` (passed to sv2v and synthesis)
+  - Reset button S1 pulls **LOW** when pressed (used directly as active high resetb)
 
 ### SystemVerilog Conversion
 - Original `.sv` files are converted to `.sv.conv.v` using sv2v tool
@@ -101,12 +105,15 @@ Current register sections:
 
 ## Hardware Interface
 
-- **Clock**: External clock input
-- **Reset**: Button S1 (btn_s1_reset)
-- **I2C**: SCL/SDA pins for register access
+- **Clock**: External clock input (27 MHz)
+- **Reset**: Button S1 (btn_s1_resetb)
+  - **Tang Nano 9K**: Button pulls LOW when pressed (used directly as active high resetb signal)
+  - **Tang Nano 20K**: Button pulls HIGH when pressed (inverted internally to get active high resetb signal)
+  - Handled automatically via board-specific defines (`TANGNANO9K` / `TANGNANO20K`)
+- **I2C**: SCL/SDA pins for register access (currently disabled, pins used for UART monitors)
 - **UART**: RX/TX pins (connected to USB/FTDI)
 - **PWM**: Single PWM output
-- **Debug**: 6-bit LED output for debugging
+- **Debug**: 6-bit LED output for debugging (active LOW on Tang Nano 20K)
 - **Buttons**: S1 (reset), S2 (general purpose)
 
 ## Python UART Tools

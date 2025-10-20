@@ -6,14 +6,14 @@ import fpga_template_pkg::*;
 module fpga_template_top
     (
     input   clk,
-    //---I2C-----------
-    input   i2c_scl,
-    inout   i2c_sda,
+    //---I2C----------- (Disabled - pins used for UART monitors)
+    //input   i2c_scl,
+    //inout   i2c_sda,
     //---UART----------
-    input   uart_rx,    // Pin 18 - RX from USB/FTDI internal
-    output  uart_tx,    // Pin 17 - TX to USB/FTDI internal 
-    //output  uart_tx_mon,
-    //output  uart_rx_mon,
+    input   uart_rx,    // Pin 70 - RX from USB/FTDI
+    output  uart_tx,    // Pin 69 - TX to USB/FTDI
+    output  uart_tx_mon,  // Pin 28 - Scope monitor
+    output  uart_rx_mon,  // Pin 27 - Scope monitor
     //---UART State Monitors---
     //output  [1:0] rx_state_mon,
     //output  [3:0] proto_state_mon,
@@ -28,18 +28,39 @@ module fpga_template_top
     );
     
     
-//assign uart_rx_mon = uart_rx; 
-wire debug_rx_data_valid; 
-//assign uart_tx_mon = uart_tx; 
+// UART monitor assignments for scope debugging
+assign uart_rx_mon = uart_rx;
+wire debug_rx_data_valid;
+
+// Clock divider to verify clock is running
+reg [20:0] clk_div_counter;
+always @(posedge clk) begin
+    if (!resetb)
+        clk_div_counter <= 0;
+    else
+        clk_div_counter <= clk_div_counter + 1;
+end
+
+// TX monitor shows divided clock (~25.8 Hz at 27MHz)
+assign uart_tx_mon = clk_div_counter[20]; 
 
 assign debug_led = ~sys_cfg.debug_led; // Inverted for Tang Nano 20K active-LOW LEDs
 
 //--------------------------------------------------------------------------------------------------------
-// Clock and reset   
-//-------------------------------------------------------------------------------------------------------- 
+// Clock and reset
+//--------------------------------------------------------------------------------------------------------
 
-wire resetb; 
-assign resetb = btn_s1_resetb; 
+// Reset button behavior differs between boards:
+// Tang Nano 9K:  Button pulls LOW when pressed  (active LOW)
+// Tang Nano 20K: Button pulls HIGH when pressed (active HIGH)
+wire resetb;
+`ifdef TANGNANO20K
+    assign resetb = ~btn_s1_resetb;   // 20K: button HIGH when pressed
+`elsif TANGNANO9K
+    assign resetb = btn_s1_resetb;    // 9K: button LOW when pressed, invert to get active high reset
+`else
+    assign resetb = ~btn_s1_resetb;   // Default to 20K behavior
+`endif 
 
 // Direct clock insert PLL here when needed
 
@@ -75,15 +96,16 @@ wire uart_reg_en;
 wire uart_write_en;
 wire [1:0] uart_streamSt_mon;
 wire [7:0] uart_debug_out;
+wire [1:0] uart_tx_state_mon;  // Keep TX state from being optimized away
 
 // Debug UART signals
 assign debug_uart_send = debug_send;
 assign debug_uart_data = debug_byte;
 
 //--------------------------------------------------------------------------------------------------------
-// I2C interface
+// I2C interface - DISABLED (pins used for UART monitors)
 //--------------------------------------------------------------------------------------------------------
-i2c_if i2c_inst (
+/*i2c_if i2c_inst (
     .clk                (clk),
     .resetb             (resetb),
     .sda                (i2c_sda),
@@ -94,7 +116,7 @@ i2c_if i2c_inst (
     .reg_en             (i2c_reg_en),
     .write_en           (i2c_write_en),
     .streamSt_mon       (i2c_streamSt_mon)
-);
+);*/
 
 //--------------------------------------------------------------------------------------------------------
 // UART interface
@@ -118,7 +140,7 @@ uart_if uart_inst (
     .debug_rx_data_valid (debug_rx_data_valid),
     .rx_state_mon       (),
     .proto_state_mon    (),
-    .tx_state_mon       () 
+    .tx_state_mon       (uart_tx_state_mon)  // Critical: prevents TX optimization
 );
 
 //--------------------------------------------------------------------------------------------------------

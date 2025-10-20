@@ -25,6 +25,12 @@ IO_PORT "i2c_scl" DRIVE=4 IO_TYPE=LVCMOS33 PULL_MODE=UP;
 IO_LOC  "i2c_sda" 74;
 IO_PORT "i2c_sda" DRIVE=4 IO_TYPE=LVCMOS33 PULL_MODE=UP;
 
+IO_LOC  "uart_tx_mon" 28;
+IO_PORT "uart_tx_mon" DRIVE=16 IO_TYPE=LVCMOS33;
+
+IO_LOC  "uart_rx_mon" 27;
+IO_PORT "uart_rx_mon" DRIVE=16 IO_TYPE=LVCMOS33;
+
 IO_LOC  "clk" 4;
 IO_PORT "clk" IO_TYPE=LVCMOS33;
 
