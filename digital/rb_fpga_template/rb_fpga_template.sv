@@ -51,7 +51,7 @@ begin
     reg__sys_cfg__enable_stuf                             <=  1'b0;   //Enable stuf
     reg__sys_cfg__enable_other                            <=  1'b1;   //Enable other stuf
     reg__sys_cfg__pwm_duty                                <=  8'b10000101;   //Counter value for pwm
-    reg__sys_cfg__debug_led                               <=  8'b10101010;   //Debug led signals
+    reg__sys_cfg__debug_led                               <=  8'b00000001;   //Debug led signals
     reg__sys_cfg__debug_data0                             <=  8'b00000000;   //Data store
     reg__sys_cfg__debug_data1                             <=  8'b00000001;   //Data store
     reg__sys_cfg__debug_data2                             <=  8'b00000010;   //Data store

@@ -87,6 +87,7 @@ build: $(OBJ)/$(PROJ).fs
 
 # Flash to Eprom and reboot
 flash: 
+#	openFPGALoader --ftdi-serial 2023030621 --ftdi-channel 0 -b ${BOARD} -f $(OBJ)/$(PROJ).fs
 	openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} -f $(OBJ)/$(PROJ).fs
 
 # Load bit stream to device no -f

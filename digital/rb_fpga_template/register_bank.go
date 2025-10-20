@@ -54,35 +54,34 @@ func check(e error) {
 func main() {
 
 	sys_cfg := []Symbol{
-		{0, "enable_stuf", 			"sys_cfg", 0, 1, 0, 0, 		false, "Enable stuf", "Long"},
-		{1, "enable_other", 		"sys_cfg", 0, 1, 1, 1, 		false, "Enable other stuf", "Long"},
-		{2, "monitor_flag", 		"sys_cfg", 0, 1, 2, 0, 		true,  "Monitor internal flag", "Long"}, //Read only
-		{3, "pwm_duty",			 	"sys_cfg", 1, 8, 0, 0x85, 	false, "Counter value for pwm", "Long"}, 
-		{4, "debug_led", 			"sys_cfg", 2, 8, 0, 0xaa, 	false, "Debug led signals", "Debug led signals"},
-		{5, "debug_data0", 			"sys_cfg", 4, 8, 0, 0x00, 	false, "Data store", "Data store"},
-		{6, "debug_data1", 			"sys_cfg", 5, 8, 0, 0x01, 	false, "Data store", "Data store"},
-		{7, "debug_data2", 			"sys_cfg", 6, 8, 0, 0x02, 	false, "Data store", "Data store"},
+		{0, "enable_stuf", "sys_cfg", 0, 1, 0, 0, false, "Enable stuf", "Long"},
+		{1, "enable_other", "sys_cfg", 0, 1, 1, 1, false, "Enable other stuf", "Long"},
+		{2, "monitor_flag", "sys_cfg", 0, 1, 2, 0, true, "Monitor internal flag", "Long"}, //Read only
+		{3, "pwm_duty", "sys_cfg", 1, 8, 0, 0x85, false, "Counter value for pwm", "Long"},
+		{4, "debug_led", "sys_cfg", 2, 8, 0, 0x01, false, "Debug led signals", "Debug led signals"},
+		{5, "debug_data0", "sys_cfg", 4, 8, 0, 0x00, false, "Data store", "Data store"},
+		{6, "debug_data1", "sys_cfg", 5, 8, 0, 0x01, false, "Data store", "Data store"},
+		{7, "debug_data2", "sys_cfg", 6, 8, 0, 0x02, false, "Data store", "Data store"},
 	}
 
 	//syid, name, 					section, address, size, pos, reset, readonly, shortDescription, longDescription 		 make the rest of the 3 registers for adress 0, and offseet the rest
-	
 
 	dsp_cfg := []Symbol{
-		{0, "bypass_enable", 		"dsp_cfg", 0, 1, 0, 1, 		false, "Bypass filters on the DSP", "Long"},
-		{1, "dc_filter_enable", 	"dsp_cfg", 0, 1, 1, 1, 		false, "Bypass DC filter on the DSP", "Long"},
-		{2, "bp_filter_enable", 	"dsp_cfg", 0, 1, 2, 1, 		false, "Bypass bandpass filter on the DSP", "Long"},
-		{3, "dec_filter_enable", 	"dsp_cfg", 0, 1, 3, 1, 		false, "Bypass decimation filter on the DSP", "Long"},
-		{4, "pli_filter_enable", 	"dsp_cfg", 0, 1, 4, 1, 		false, "Bypass PLI filter on the DSP", "Long"},
-		{5, "placeholder1", 		"dsp_cfg", 0, 1, 5, 0, 		false, "placeholder", "Long"},
-		{6, "placeholder2", 		"dsp_cfg", 0, 1, 6, 0, 		false, "placeholder", "Long"},
-		{7, "placeholder3", 		"dsp_cfg", 0, 1, 7, 0, 		false, "placeholder", "Long"},
+		{0, "bypass_enable", "dsp_cfg", 0, 1, 0, 1, false, "Bypass filters on the DSP", "Long"},
+		{1, "dc_filter_enable", "dsp_cfg", 0, 1, 1, 1, false, "Bypass DC filter on the DSP", "Long"},
+		{2, "bp_filter_enable", "dsp_cfg", 0, 1, 2, 1, false, "Bypass bandpass filter on the DSP", "Long"},
+		{3, "dec_filter_enable", "dsp_cfg", 0, 1, 3, 1, false, "Bypass decimation filter on the DSP", "Long"},
+		{4, "pli_filter_enable", "dsp_cfg", 0, 1, 4, 1, false, "Bypass PLI filter on the DSP", "Long"},
+		{5, "placeholder1", "dsp_cfg", 0, 1, 5, 0, false, "placeholder", "Long"},
+		{6, "placeholder2", "dsp_cfg", 0, 1, 6, 0, false, "placeholder", "Long"},
+		{7, "placeholder3", "dsp_cfg", 0, 1, 7, 0, false, "placeholder", "Long"},
 	}
 
-    sec := []Section{
+	sec := []Section{
 		//SID, Name, description, parent, offset, size, symbols
 
-		{0, "sys_cfg", "System configuration", 				nil, 0x00, 0x10, sys_cfg},	
-		{1, "dsp_cfg", "DSP interface and statemachine", 	nil, 0x40, 0x10, dsp_cfg},	
+		{0, "sys_cfg", "System configuration", nil, 0x00, 0x10, sys_cfg},
+		{1, "dsp_cfg", "DSP interface and statemachine", nil, 0x40, 0x10, dsp_cfg},
 	}
 
 	// create a array of array of symbols
@@ -164,12 +163,12 @@ func writeHDLIncludeStructFile(r RegMap) {
 	fmt.Fprintf(w, "\n//`ifndef _%s_\n", r.name)
 	fmt.Fprintf(w, "//  `define _%s_\n", r.name)
 	fmt.Fprintf(w, "\npackage %s_pkg;", r.name)
-	for _ , sec := range r.sections {
+	for _, sec := range r.sections {
 		//fmt.Printf("//1.2 - %d\n", index)
 		fmt.Fprintf(w, "// Wire interface for %s\n", sec.name)
 		fmt.Fprintf(w, "typedef struct packed {\n")
 		//fmt.Fprintf(w,"  logic dummy;\n")
- 		for i := 0; i < (8 * sec.size); i++ { //HAR FJERNET DET HER-----------------------------------------------
+		for i := 0; i < (8 * sec.size); i++ { //HAR FJERNET DET HER-----------------------------------------------
 			//for i := 0; i < (8 * (1 << sec.size)); i++ {
 			//fmt.Printf("//1.2 - %d - %d \n", index, i)
 

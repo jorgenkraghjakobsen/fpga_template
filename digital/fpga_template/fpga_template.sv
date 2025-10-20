@@ -12,12 +12,12 @@ module fpga_template_top
     //---UART----------
     input   uart_rx,    // Pin 18 - RX from USB/FTDI internal
     output  uart_tx,    // Pin 17 - TX to USB/FTDI internal 
-    output  uart_tx_mon,
-    output  uart_rx_mon,
+    //output  uart_tx_mon,
+    //output  uart_rx_mon,
     //---UART State Monitors---
-    output  [1:0] rx_state_mon,
-    output  [3:0] proto_state_mon,
-    output  [1:0] tx_state_mon,
+    //output  [1:0] rx_state_mon,
+    //output  [3:0] proto_state_mon,
+    //output  [1:0] tx_state_mon,
 
     //---PWM-----------
     output pwm_out,
@@ -28,11 +28,11 @@ module fpga_template_top
     );
     
     
-assign uart_rx_mon = uart_rx; 
+//assign uart_rx_mon = uart_rx; 
 wire debug_rx_data_valid; 
-assign uart_tx_mon = uart_tx; 
+//assign uart_tx_mon = uart_tx; 
 
-assign debug_led = sys_cfg.debug_led;
+assign debug_led = ~sys_cfg.debug_led; // Inverted for Tang Nano 20K active-LOW LEDs
 
 //--------------------------------------------------------------------------------------------------------
 // Clock and reset   
@@ -45,9 +45,11 @@ assign resetb = btn_s1_resetb;
 
 //--------------------------------------------------------------------------------------------------------
 // Register bank structs  
-//-------------------------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------------------------
 rb_sys_cfg_wire_t sys_cfg;
 assign sys_cfg.monitor_flag = 1'b0;
+
+rb_dsp_cfg_wire_t dsp_cfg;
 
 //--------------------------------------------------------------------------------------------------------
 // Interface signals (shared between I2C and UART)
@@ -139,10 +141,12 @@ rb_fpga_template rb_fpga_template_inst (
     .clk                (clk),
     .resetb             (resetb),
     .address            (rb_address),
-    .data_write_in      (rb_data_write_to_reg), 
+    .data_write_in      (rb_data_write_to_reg),
     .data_read_out      (rb_data_read_from_reg),
+    .reg_en             (rb_reg_en),
     .write_en           (rb_write_en),
-    .sys_cfg            (sys_cfg)
+    .sys_cfg            (sys_cfg),
+    .dsp_cfg            (dsp_cfg)
     ); 
 
 //-------------------------------------------------------------------------------------------------------- 
