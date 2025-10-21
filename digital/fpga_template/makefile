@@ -1,6 +1,6 @@
 # Board selection: tangnano9k or tangnano20k
 # Override with: make BOARD=tangnano20k build
-BOARD 		?= tangnano9k
+BOARD 		?= tangnano20k
 
 # Board-specific parameters
 ifeq ($(BOARD),tangnano20k)
