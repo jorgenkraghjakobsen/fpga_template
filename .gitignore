@@ -1,1 +1,4 @@
 obj
+
+# FPGA device selection (local configuration)
+.fpga_device

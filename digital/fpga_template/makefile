@@ -1,6 +1,10 @@
+# Include FPGA device selection if available (sets FPGA_BOARD and FPGA_SERIAL)
+-include .fpga_device
+
 # Board selection: tangnano9k or tangnano20k
 # Override with: make BOARD=tangnano20k build
-BOARD 		?= tangnano20k
+# Default: Use FPGA_BOARD from device selection, or tangnano20k if not set
+BOARD 		?= $(if $(FPGA_BOARD),$(FPGA_BOARD),tangnano20k)
 
 # Board-specific parameters
 ifeq ($(BOARD),tangnano20k)
@@ -88,16 +92,50 @@ build: $(OBJ)/$(PROJ).fs
 
 
 # Flash to Eprom and reboot
-flash: 
-#	openFPGALoader --ftdi-serial 2023030621 --ftdi-channel 0 -b ${BOARD} -f $(OBJ)/$(PROJ).fs
-	openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} -f $(OBJ)/$(PROJ).fs
+flash:
+	@if [ -z "$(FPGA_SERIAL)" ]; then \
+		echo "Error: No FPGA device selected. Run 'make find-device' first."; \
+		exit 1; \
+	fi
+	openFPGALoader --ftdi-serial "$(FPGA_SERIAL)" --ftdi-channel 0 -b ${BOARD} -f $(OBJ)/$(PROJ).fs
 
 # Load bit stream to device no -f
-load: 
-	openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} $(OBJ)/$(PROJ).fs
+load:
+	@if [ -z "$(FPGA_SERIAL)" ]; then \
+		echo "Error: No FPGA device selected. Run 'make find-device' first."; \
+		exit 1; \
+	fi
+	openFPGALoader --ftdi-serial "$(FPGA_SERIAL)" --ftdi-channel 0 -b ${BOARD} $(OBJ)/$(PROJ).fs
 
 clean:
 	rm -rf $(OBJ)
+
+# FPGA Device Selection Targets
+find-device:
+	@./scripts/select_fpga_device.sh
+
+show-device:
+	@if [ -f .fpga_device ]; then \
+		echo "Currently selected FPGA device:"; \
+		grep -v '^#' .fpga_device | grep 'FPGA_SERIAL' | sed 's/FPGA_SERIAL=/  Serial: /'; \
+		grep -v '^#' .fpga_device | grep 'FPGA_BOARD' | sed 's/FPGA_BOARD=/  Board: /'; \
+		echo ""; \
+		grep '^# Device:' .fpga_device | sed 's/^# /  /'; \
+		echo ""; \
+		echo "Use 'make find-device' to change selection"; \
+	else \
+		echo "No FPGA device selected."; \
+		echo "Run 'make find-device' to select a device."; \
+	fi
+
+clear-device:
+	@if [ -f .fpga_device ]; then \
+		rm -f .fpga_device; \
+		echo "Device selection cleared."; \
+		echo "Run 'make find-device' to select a new device."; \
+	else \
+		echo "No device selection to clear."; \
+	fi
 
 # Show build information and help
 info:
@@ -107,6 +145,11 @@ info:
 	@echo "DEVICE:  $(DEVICE)"
 	@echo "CST:     $(CST_FILE)"
 	@echo "PROJECT: $(PROJ)"
+	@if [ -n "$(FPGA_SERIAL)" ]; then \
+		echo "FPGA:    Selected (Serial: $(FPGA_SERIAL))"; \
+	else \
+		echo "FPGA:    No device selected - run 'make find-device'"; \
+	fi
 	@echo ""
 	@echo "===== Usage ====="
 	@echo "Build for Tang Nano 9K (default):"
@@ -116,9 +159,16 @@ info:
 	@echo "Build for Tang Nano 20K:"
 	@echo "  make BOARD=tangnano20k build"
 	@echo ""
-	@echo "Other commands:"
+	@echo "Device Selection (required before flash/load):"
+	@echo "  make find-device       - Scan and select FPGA device"
+	@echo "  make show-device       - Show currently selected device"
+	@echo "  make clear-device      - Clear device selection"
+	@echo ""
+	@echo "Programming commands:"
 	@echo "  make load              - Load bitstream to FPGA (temporary)"
 	@echo "  make flash             - Flash bitstream to EPROM (persistent)"
+	@echo ""
+	@echo "Other commands:"
 	@echo "  make clean             - Remove all build artifacts"
 	@echo "  make info              - Show this information"
 
