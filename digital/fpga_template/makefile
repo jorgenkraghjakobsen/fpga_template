@@ -30,7 +30,7 @@ OBJ 		= $(WS)/obj/$(PROJ)
 SRC_INC 	= $(WS)/digital
 PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 
-SV2V 		= $(WS)/vs2v
+SV2V 		= $(WS)/sv2v
 
 .PHONY: $(OBJ)
 # Create Object build dir
