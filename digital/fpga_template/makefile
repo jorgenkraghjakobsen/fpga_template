@@ -30,7 +30,10 @@ OBJ 		= $(WS)/obj/$(PROJ)
 SRC_INC 	= $(WS)/digital
 PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 
+# Tool setup 
 SV2V 		= $(WS)/sv2v
+NEXTPNR 	= nextpnr-gowin					# nextpnr-gowin or nextpnr-himbaechel
+
 
 .PHONY: $(OBJ)
 # Create Object build dir
@@ -82,7 +85,7 @@ $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ)
 
 # Place and Route
 $(OBJ)/$(PROJ)_pnr.json: $(OBJ)/$(PROJ).json $(WS)/digital/$(PROJ)/$(CST_FILE)
-	nextpnr-himbaechel --freq 27 --json $(OBJ)/$(PROJ).json --write $(OBJ)/$(PROJ)_pnr.json \
+	$(NEXTPRN-GOWIN) --freq 27 --json $(OBJ)/$(PROJ).json --write $(OBJ)/$(PROJ)_pnr.json \
 	--device ${DEVICE} --vopt family=${FAMILY} --vopt cst=$(WS)/digital/$(PROJ)/$(CST_FILE)
 
 
