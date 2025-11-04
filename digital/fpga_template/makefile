@@ -30,7 +30,7 @@ OBJ 		= $(WS)/obj/$(PROJ)
 SRC_INC 	= $(WS)/digital
 PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 
-VS2V 		= $(WS)/vs2v
+SV2V 		= $(WS)/vs2v
 
 .PHONY: $(OBJ)
 # Create Object build dir
@@ -70,7 +70,7 @@ test:
 
 conv2v: $(SRC_SV)
 	$(foreach s,$(SRC_SV), \
-	  $(shell $(VS2V) -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) $(PKG) $(s) > $(s).conv.v) \
+	  $(shell $(SV2V) -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) $(PKG) $(s) > $(s).conv.v) \
 	  $(info Converting systemverilog $(s) : ))
 
 $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 
