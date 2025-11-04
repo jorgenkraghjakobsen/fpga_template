@@ -32,7 +32,7 @@ PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 
 # Tool setup 
 SV2V 		= $(WS)/sv2v
-NEXTPNR 	= nextpnr-gowin					# nextpnr-gowin or nextpnr-himbaechel
+NEXTPNR 	= nextpnr-himbaechel					# nextpnr-gowin or nextpnr-himbaechel
 
 
 .PHONY: $(OBJ)
