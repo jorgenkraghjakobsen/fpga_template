@@ -4,7 +4,7 @@
 # Board selection: tangnano9k or tangnano20k
 # Override with: make BOARD=tangnano20k build
 # Default: Use FPGA_BOARD from device selection, or tangnano20k if not set
-BOARD 		?= $(if $(FPGA_BOARD),$(FPGA_BOARD),tangnano20k)
+BOARD 		?= $(if $(FPGA_BOARD),$(FPGA_BOARD),tangnano9k)
 
 # Board-specific parameters
 ifeq ($(BOARD),tangnano20k)

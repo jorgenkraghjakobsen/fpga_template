@@ -14,7 +14,7 @@ always @(posedge clock_in or posedge reset) begin
         pwm_r   <= 1;
     end else begin
         if (counter < 255) begin
-            counter <= counter + 1;
+            counter <= counter + 2;
             pwm_r   <= !(counter < duty_cycle);
         end else begin
             counter <= 0;
