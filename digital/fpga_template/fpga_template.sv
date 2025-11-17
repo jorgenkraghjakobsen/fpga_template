@@ -1,5 +1,7 @@
-// Boiler plate for a midsize fpga project 
-// 
+// Boiler plate for a midsize fpga project
+//
+// slang support
+`include "rb_fpga_template/rb_fpga_template_struct.svh"
 
 import fpga_template_pkg::*; 
 
@@ -9,19 +11,26 @@ module fpga_template_top
     //---I2C----------- (Disabled - pins used for UART monitors)
     //input   i2c_scl,
     //inout   i2c_sda,
-    
+
     //---UART----------
     input   uart_rx,    // Pin 70 - RX from USB/FTDI
     output  uart_tx,    // Pin 69 - TX to USB/FTDI
-    
+
     //---PWM-----------
     output pwm_out,
     //---Debug---------
     output  [5:0] debug_led,
-    
+
     input   btn_s1_resetb,     // Button 1 input
     input   btn_s2            // Button 2 input
     );
+
+//--------------------------------------------------------------------------------------------------------
+// Register bank structs (declared early for use in assignments)
+// Declared as wires (nets) for inout port connections
+//--------------------------------------------------------------------------------------------------------
+wire rb_sys_cfg_wire_t sys_cfg;
+wire rb_dsp_cfg_wire_t dsp_cfg;
 
 assign debug_led = ~sys_cfg.debug_led; // Inverted for Tang Nano 20K active-LOW LEDs
 
@@ -42,12 +51,6 @@ wire resetb;
 `endif 
 
 // Direct clock insert PLL here when needed
-
-//--------------------------------------------------------------------------------------------------------
-// Register bank structs  
-//--------------------------------------------------------------------------------------------------------
-rb_sys_cfg_wire_t sys_cfg;
-rb_dsp_cfg_wire_t dsp_cfg;
 
 //--------------------------------------------------------------------------------------------------------
 // Interface signals (shared between I2C and UART)

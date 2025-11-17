@@ -76,12 +76,14 @@ conv2v: $(SRC_SV)
 	  $(shell $(SV2V) -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) $(PKG) $(s) > $(s).conv.v) \
 	  $(info Converting systemverilog $(s) : ))
 
-$(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 
+#$(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 
+$(OBJ)/$(PROJ).json: $(SRC) | $(OBJ) 
 	echo "#Yosys build script" > $(OBJ)/yosys.cmd
 	echo "verilog_defaults -add -I $(SRC_INC)" >> $(OBJ)/yosys.cmd
-	echo "read_verilog $(SRC_V) $(SRC_CONV)" >> $(OBJ)/yosys.cmd
+	echo "read_slang -D$(BOARD_DEFINE) -I$(SRC_INC) --ignore-unknown-modules --keep-hierarchy $(SRC_SV)" >> $(OBJ)/yosys.cmd 
+	echo "read_verilog $(SRC_V)" >> $(OBJ)/yosys.cmd
 	echo "synth_gowin -top $(PROJ)_top -json $(OBJ)/$(PROJ).json" >> $(OBJ)/yosys.cmd
-	yosys -s $(OBJ)/yosys.cmd
+	yosys -m slang -s $(OBJ)/yosys.cmd
 
 # Place and Route
 $(OBJ)/$(PROJ)_pnr.json: $(OBJ)/$(PROJ).json $(WS)/digital/$(PROJ)/$(CST_FILE)
